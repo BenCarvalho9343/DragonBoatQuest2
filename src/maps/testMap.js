@@ -26,6 +26,28 @@ export const testMap = {
       targetSpawn: "fromTestField",
     },
   ],
+  npcs: [
+    {
+      id: "coach-tim-test",
+      name: "Coach Tim",
+      x: 7,
+      y: 6,
+      width: 1,
+      height: 1,
+      dialogueId: "coachTimTest",
+      color: "npc",
+    },
+    {
+      id: "club-member-test",
+      name: "Club Member",
+      x: 11,
+      y: 8,
+      width: 1,
+      height: 1,
+      dialogueId: "clubMemberTest",
+      color: "npcAlt",
+    },
+  ],
   tiles: [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGW",

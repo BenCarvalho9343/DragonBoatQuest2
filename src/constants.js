@@ -17,6 +17,8 @@ export const COLORS = {
   wall: "#2f3d53",
   player: "#f43f5e",
   playerShadow: "#111827",
+  npc: "#38bdf8",
+  npcAlt: "#a78bfa",
 };
 
 export const GAME_STATES = {

@@ -76,7 +76,8 @@ function collidesWithMap(map, x, y, width, height) {
     isSolidTile(map, left, top) ||
     isSolidTile(map, right, top) ||
     isSolidTile(map, left, bottom) ||
-    isSolidTile(map, right, bottom)
+    isSolidTile(map, right, bottom) ||
+    collidesWithNpc(map, x, y, width, height)
   );
 }
 
@@ -87,4 +88,15 @@ function isSolidTile(map, tileX, tileY) {
 
   const tile = map.tiles[tileY][tileX];
   return map.solidTiles.includes(tile);
+}
+
+function collidesWithNpc(map, x, y, width, height) {
+  return (map.npcs ?? []).some((npc) => {
+    const npcX = npc.x * TILE_SIZE;
+    const npcY = npc.y * TILE_SIZE;
+    const npcWidth = npc.width * TILE_SIZE;
+    const npcHeight = npc.height * TILE_SIZE;
+
+    return x < npcX + npcWidth && x + width > npcX && y < npcY + npcHeight && y + height > npcY;
+  });
 }

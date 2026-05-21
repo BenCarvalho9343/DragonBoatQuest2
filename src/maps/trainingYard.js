@@ -21,6 +21,18 @@ export const trainingYard = {
       targetSpawn: "fromTrainingYard",
     },
   ],
+  npcs: [
+    {
+      id: "yard-paddler-test",
+      name: "Training Paddler",
+      x: 14,
+      y: 10,
+      width: 1,
+      height: 1,
+      dialogueId: "trainingPaddlerTest",
+      color: "npc",
+    },
+  ],
   tiles: [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WGGGGGGGGGGGGGGGGGGGGGGGGGGW",

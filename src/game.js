@@ -1,6 +1,7 @@
 import { GAME_STATES } from "./constants.js";
 import { createInitialState } from "./state.js";
 import { render } from "./renderer.js";
+import { advanceDialogue, tryStartDialogue } from "./systems/dialogue.js";
 import { updateMapTransition } from "./systems/mapManager.js";
 import { updatePlayerMovement } from "./systems/movement.js";
 
@@ -43,6 +44,18 @@ export class Game {
 
     if (this.state.screen === GAME_STATES.TEST_MAP) {
       updateMapTransition(this.state, delta);
+      if (this.state.dialogue.active) {
+        if (this.input.wasPressed("Space", "Enter")) {
+          advanceDialogue(this.state);
+        }
+
+        return;
+      }
+
+      if (this.input.wasPressed("Space")) {
+        tryStartDialogue(this.state);
+      }
+
       updatePlayerMovement(this.state, this.input, delta);
     }
   }
