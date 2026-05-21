@@ -1,0 +1,35 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: #07111f;
+  color: #f8fafc;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+
+.game-shell {
+  display: grid;
+  place-items: center;
+  width: min(100vw, 960px);
+  padding: 16px;
+}
+
+canvas {
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 16 / 9;
+  border: 2px solid #26364d;
+  background: #0f172a;
+  image-rendering: pixelated;
+}
