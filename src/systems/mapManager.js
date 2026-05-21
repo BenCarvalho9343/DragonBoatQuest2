@@ -1,5 +1,6 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TILE_SIZE } from "../constants.js";
 import { getMap } from "../maps/index.js";
+import { hasFlag } from "./flags.js";
 
 export function createMapState(mapId, spawnId) {
   const map = getMap(mapId);
@@ -57,9 +58,21 @@ export function checkForMapExit(state) {
   const centerTileY = Math.floor((state.player.y + state.player.height / 2) / TILE_SIZE);
   const exit = state.map.exits.find((candidate) => isInsideExit(candidate, centerTileX, centerTileY));
 
-  if (exit) {
-    changeMap(state, exit.targetMap, exit.targetSpawn);
+  if (!exit) {
+    return false;
   }
+
+  if (exit.requiresFlag && !hasFlag(state, exit.requiresFlag)) {
+    return {
+      blocked: true,
+      message: exit.lockedMessage ?? "This way is not open yet.",
+    };
+  }
+
+  changeMap(state, exit.targetMap, exit.targetSpawn);
+  return {
+    blocked: false,
+  };
 }
 
 export function updateCamera(state) {

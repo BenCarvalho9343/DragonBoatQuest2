@@ -1,4 +1,5 @@
 import { PLAYER_SPEED, TILE_SIZE } from "../constants.js";
+import { startSystemDialogue } from "./dialogue.js";
 import { checkForMapExit, updateCamera } from "./mapManager.js";
 
 export function updatePlayerMovement(state, input, delta) {
@@ -26,7 +27,11 @@ export function updatePlayerMovement(state, input, delta) {
     player.y = nextY;
   }
 
-  checkForMapExit(state);
+  const exitResult = checkForMapExit(state);
+  if (exitResult?.blocked) {
+    startSystemDialogue(state, "Route Closed", [exitResult.message]);
+  }
+
   updateCamera(state);
 }
 

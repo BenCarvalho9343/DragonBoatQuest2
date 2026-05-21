@@ -24,6 +24,8 @@ export const testMap = {
       height: 2,
       targetMap: "training-yard",
       targetSpawn: "fromTestField",
+      requiresFlag: "training_yard_unlocked",
+      lockedMessage: "Talk to Coach Tim first.",
     },
   ],
   npcs: [

@@ -2,7 +2,7 @@
 
 Dragon Boat Quest 2 is a browser-first HTML Canvas game about Secklow Hundred Dragon Boat Club travelling through a full dragon boat racing season.
 
-This project is currently in Phase 3: dialogue and NPC interaction.
+This project is currently in Phase 4: game state and story flags.
 
 ## Running The Game
 
@@ -12,7 +12,7 @@ No build step is required.
 
 ## Current Phase
 
-Phase 3 includes:
+Phase 4 includes:
 
 - Canvas setup
 - Basic game loop
@@ -31,6 +31,10 @@ Phase 3 includes:
 - Spacebar interaction with facing NPCs
 - Speaker-labelled dialogue boxes
 - Multi-line dialogue advancement
+- Story flags
+- Dialogue that changes after flags are set
+- Flag-gated map exits
+- Shared progress state for future crew, inventory, and trophies
 
 ## Planned Direction
 

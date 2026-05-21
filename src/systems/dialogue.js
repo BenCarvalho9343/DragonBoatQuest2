@@ -1,5 +1,6 @@
 import { TILE_SIZE } from "../constants.js";
 import { dialogue } from "../data/dialogue.js";
+import { applyEvents, hasFlag } from "./flags.js";
 
 export function createDialogueState() {
   return {
@@ -7,6 +8,7 @@ export function createDialogueState() {
     speaker: "",
     lines: [],
     lineIndex: 0,
+    events: [],
   };
 }
 
@@ -24,9 +26,12 @@ export function tryStartDialogue(state) {
   }
 
   state.dialogue.active = true;
-  state.dialogue.speaker = script.speaker ?? npc.name;
-  state.dialogue.lines = script.lines;
+  const variant = resolveDialogueVariant(state, script);
+
+  state.dialogue.speaker = variant.speaker ?? script.speaker ?? npc.name;
+  state.dialogue.lines = variant.lines;
   state.dialogue.lineIndex = 0;
+  state.dialogue.events = variant.events ?? [];
   state.player.moving = false;
 
   return true;
@@ -43,9 +48,28 @@ export function advanceDialogue(state) {
   }
 
   state.dialogue.active = false;
+  applyEvents(state, state.dialogue.events);
   state.dialogue.speaker = "";
   state.dialogue.lines = [];
   state.dialogue.lineIndex = 0;
+  state.dialogue.events = [];
+}
+
+export function startSystemDialogue(state, speaker, lines, events = []) {
+  state.dialogue.active = true;
+  state.dialogue.speaker = speaker;
+  state.dialogue.lines = lines;
+  state.dialogue.lineIndex = 0;
+  state.dialogue.events = events;
+  state.player.moving = false;
+}
+
+function resolveDialogueVariant(state, script) {
+  const variant = script.variants?.find((candidate) => {
+    return (candidate.requires ?? []).every((flag) => hasFlag(state, flag));
+  });
+
+  return variant ?? script;
 }
 
 function getFacingNpc(state) {
