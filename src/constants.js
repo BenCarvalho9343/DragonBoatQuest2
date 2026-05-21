@@ -23,5 +23,6 @@ export const COLORS = {
 
 export const GAME_STATES = {
   TITLE: "title",
+  NAME_ENTRY: "nameEntry",
   TEST_MAP: "testMap",
 };

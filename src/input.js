@@ -2,6 +2,7 @@ export class Input {
   constructor(target = window) {
     this.down = new Set();
     this.pressed = new Set();
+    this.typedCharacters = [];
 
     target.addEventListener("keydown", (event) => {
       if (!this.down.has(event.code)) {
@@ -9,6 +10,10 @@ export class Input {
       }
 
       this.down.add(event.code);
+
+      if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        this.typedCharacters.push(event.key);
+      }
 
       if (this.shouldPreventDefault(event.code)) {
         event.preventDefault();
@@ -34,9 +39,14 @@ export class Input {
 
   finishFrame() {
     this.pressed.clear();
+    this.typedCharacters = [];
+  }
+
+  consumeTypedCharacters() {
+    return [...this.typedCharacters];
   }
 
   shouldPreventDefault(code) {
-    return ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(code);
+    return ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Backspace", "Space"].includes(code);
   }
 }

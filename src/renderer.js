@@ -9,6 +9,11 @@ export function render(context, state) {
     return;
   }
 
+  if (state.screen === GAME_STATES.NAME_ENTRY) {
+    renderNameEntry(context, state);
+    return;
+  }
+
   renderTestMap(context, state);
 }
 
@@ -19,7 +24,7 @@ function clear(context) {
 
 function renderTitle(context, state) {
   drawCenteredText(context, "DRAGON BOAT QUEST 2", 120, 44, COLORS.gold);
-  drawCenteredText(context, "Phase 4 Story Flags Test", 180, 22, COLORS.text);
+  drawCenteredText(context, "Phase 5 Opening Scene Test", 180, 22, COLORS.text);
 
   const pulse = Math.sin(state.elapsed * 4) * 0.5 + 0.5;
   context.globalAlpha = 0.55 + pulse * 0.45;
@@ -27,6 +32,34 @@ function renderTitle(context, state) {
   context.globalAlpha = 1;
 
   drawCenteredText(context, "The season starts here.", 380, 18, COLORS.mutedText);
+}
+
+function renderNameEntry(context, state) {
+  drawCenteredText(context, "Coach Tim", 96, 28, COLORS.gold);
+  drawCenteredText(context, "Before we start — what do you call yourself?", 150, 22, COLORS.text);
+
+  const boxWidth = 420;
+  const boxHeight = 72;
+  const boxX = CANVAS_WIDTH / 2 - boxWidth / 2;
+  const boxY = 230;
+
+  context.fillStyle = COLORS.panel;
+  context.fillRect(boxX, boxY, boxWidth, boxHeight);
+  context.strokeStyle = COLORS.gold;
+  context.lineWidth = 3;
+  context.strokeRect(boxX + 1.5, boxY + 1.5, boxWidth - 3, boxHeight - 3);
+
+  context.fillStyle = COLORS.text;
+  context.font = "30px monospace";
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+
+  const cursorVisible = Math.floor(state.elapsed * 2) % 2 === 0;
+  const cursor = cursorVisible ? "_" : " ";
+  context.fillText(`${state.nameEntry.value}${cursor}`, boxX + 24, boxY + boxHeight / 2);
+
+  drawCenteredText(context, "Type your name, then press Enter", 344, 18, COLORS.mutedText);
+  drawCenteredText(context, "Backspace deletes", 378, 16, COLORS.mutedText);
 }
 
 function drawMap(context, map, camera) {
@@ -140,7 +173,7 @@ function drawHud(context, state) {
   context.textAlign = "left";
   context.textBaseline = "top";
   context.font = "22px monospace";
-  context.fillText("Phase 4 Story Flags", 48, 48);
+  context.fillText("Phase 5 Opening", 48, 48);
 
   context.font = "16px monospace";
   context.fillStyle = COLORS.mutedText;

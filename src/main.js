@@ -6,6 +6,8 @@ const canvas = document.querySelector("#game");
 
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
+canvas.focus();
+canvas.addEventListener("click", () => canvas.focus());
 
 const input = new Input();
 const game = new Game(canvas, input);

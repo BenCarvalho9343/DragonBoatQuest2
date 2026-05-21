@@ -29,7 +29,7 @@ export function tryStartDialogue(state) {
   const variant = resolveDialogueVariant(state, script);
 
   state.dialogue.speaker = variant.speaker ?? script.speaker ?? npc.name;
-  state.dialogue.lines = variant.lines;
+  state.dialogue.lines = formatLines(state, variant.lines);
   state.dialogue.lineIndex = 0;
   state.dialogue.events = variant.events ?? [];
   state.player.moving = false;
@@ -58,7 +58,7 @@ export function advanceDialogue(state) {
 export function startSystemDialogue(state, speaker, lines, events = []) {
   state.dialogue.active = true;
   state.dialogue.speaker = speaker;
-  state.dialogue.lines = lines;
+  state.dialogue.lines = formatLines(state, lines);
   state.dialogue.lineIndex = 0;
   state.dialogue.events = events;
   state.player.moving = false;
@@ -70,6 +70,11 @@ function resolveDialogueVariant(state, script) {
   });
 
   return variant ?? script;
+}
+
+function formatLines(state, lines) {
+  const playerName = state.playerName || "Paddler";
+  return lines.map((line) => line.replaceAll("[name]", playerName));
 }
 
 function getFacingNpc(state) {
