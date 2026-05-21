@@ -1,6 +1,7 @@
 import { GAME_STATES } from "./constants.js";
 import { createInitialState } from "./state.js";
 import { render } from "./renderer.js";
+import { updatePlayerMovement } from "./systems/movement.js";
 
 export class Game {
   constructor(canvas, input) {
@@ -37,6 +38,10 @@ export class Game {
 
     if (this.state.screen === GAME_STATES.TITLE && this.input.wasPressed("Enter", "Space")) {
       this.state.screen = GAME_STATES.TEST_MAP;
+    }
+
+    if (this.state.screen === GAME_STATES.TEST_MAP) {
+      updatePlayerMovement(this.state, this.input, delta);
     }
   }
 }

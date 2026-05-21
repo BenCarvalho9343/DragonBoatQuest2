@@ -1,5 +1,7 @@
 export const CANVAS_WIDTH = 960;
 export const CANVAS_HEIGHT = 540;
+export const TILE_SIZE = 32;
+export const PLAYER_SPEED = 180;
 
 export const COLORS = {
   background: "#0f172a",
@@ -9,6 +11,12 @@ export const COLORS = {
   gold: "#facc15",
   water: "#287a9b",
   grass: "#3f8f55",
+  path: "#b9945d",
+  dock: "#7b5234",
+  tree: "#23613b",
+  wall: "#2f3d53",
+  player: "#f43f5e",
+  playerShadow: "#111827",
 };
 
 export const GAME_STATES = {
