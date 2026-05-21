@@ -1,4 +1,5 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, PLAYER_SPEED, TILE_SIZE } from "../constants.js";
+import { PLAYER_SPEED, TILE_SIZE } from "../constants.js";
+import { checkForMapExit, updateCamera } from "./mapManager.js";
 
 export function updatePlayerMovement(state, input, delta) {
   const player = state.player;
@@ -25,6 +26,7 @@ export function updatePlayerMovement(state, input, delta) {
     player.y = nextY;
   }
 
+  checkForMapExit(state);
   updateCamera(state);
 }
 
@@ -85,18 +87,4 @@ function isSolidTile(map, tileX, tileY) {
 
   const tile = map.tiles[tileY][tileX];
   return map.solidTiles.includes(tile);
-}
-
-function updateCamera(state) {
-  const mapPixelWidth = state.map.width * TILE_SIZE;
-  const mapPixelHeight = state.map.height * TILE_SIZE;
-  const targetX = state.player.x + state.player.width / 2 - CANVAS_WIDTH / 2;
-  const targetY = state.player.y + state.player.height / 2 - CANVAS_HEIGHT / 2;
-
-  state.camera.x = clamp(targetX, 0, Math.max(0, mapPixelWidth - CANVAS_WIDTH));
-  state.camera.y = clamp(targetY, 0, Math.max(0, mapPixelHeight - CANVAS_HEIGHT));
-}
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
 }

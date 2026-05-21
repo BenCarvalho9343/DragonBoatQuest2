@@ -1,6 +1,7 @@
 import { GAME_STATES } from "./constants.js";
 import { createInitialState } from "./state.js";
 import { render } from "./renderer.js";
+import { updateMapTransition } from "./systems/mapManager.js";
 import { updatePlayerMovement } from "./systems/movement.js";
 
 export class Game {
@@ -41,6 +42,7 @@ export class Game {
     }
 
     if (this.state.screen === GAME_STATES.TEST_MAP) {
+      updateMapTransition(this.state, delta);
       updatePlayerMovement(this.state, this.input, delta);
     }
   }

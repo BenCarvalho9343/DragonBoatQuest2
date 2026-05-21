@@ -1,12 +1,31 @@
 export const testMap = {
-  id: "phase-1-test-map",
-  name: "Phase 1 Test Map",
+  id: "test-field",
+  name: "Test Field",
   width: 48,
   height: 32,
-  start: {
-    x: 7 * 32,
-    y: 8 * 32,
+  defaultSpawn: "start",
+  spawns: {
+    start: {
+      x: 7 * 32,
+      y: 8 * 32,
+      direction: "down",
+    },
+    fromTrainingYard: {
+      x: 43 * 32,
+      y: 15 * 32,
+      direction: "left",
+    },
   },
+  exits: [
+    {
+      x: 46,
+      y: 14,
+      width: 1,
+      height: 2,
+      targetMap: "training-yard",
+      targetSpawn: "fromTestField",
+    },
+  ],
   tiles: [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGW",

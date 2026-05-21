@@ -19,7 +19,7 @@ function clear(context) {
 
 function renderTitle(context, state) {
   drawCenteredText(context, "DRAGON BOAT QUEST 2", 120, 44, COLORS.gold);
-  drawCenteredText(context, "Phase 1 Movement Test", 180, 22, COLORS.text);
+  drawCenteredText(context, "Phase 2 Map Loading Test", 180, 22, COLORS.text);
 
   const pulse = Math.sin(state.elapsed * 4) * 0.5 + 0.5;
   context.globalAlpha = 0.55 + pulse * 0.45;
@@ -74,8 +74,24 @@ function getTileColor(tile) {
 
 function renderTestMap(context, state) {
   drawMap(context, state.map, state.camera);
+  drawExits(context, state);
   drawPlayer(context, state);
   drawHud(context, state);
+  drawTransitionMessage(context, state);
+}
+
+function drawExits(context, state) {
+  const { map, camera } = state;
+
+  for (const exit of map.exits) {
+    context.fillStyle = "rgba(250, 204, 21, 0.5)";
+    context.fillRect(
+      Math.round(exit.x * TILE_SIZE - camera.x),
+      Math.round(exit.y * TILE_SIZE - camera.y),
+      exit.width * TILE_SIZE,
+      exit.height * TILE_SIZE,
+    );
+  }
 }
 
 function drawPlayer(context, state) {
@@ -97,18 +113,32 @@ function drawPlayer(context, state) {
 
 function drawHud(context, state) {
   context.fillStyle = COLORS.panel;
-  context.fillRect(24, 24, 330, 116);
+  context.fillRect(24, 24, 350, 134);
 
   context.fillStyle = COLORS.text;
   context.textAlign = "left";
   context.textBaseline = "top";
   context.font = "22px monospace";
-  context.fillText("Phase 1 Test Map", 48, 48);
+  context.fillText("Phase 2 Map Test", 48, 48);
 
   context.font = "16px monospace";
   context.fillStyle = COLORS.mutedText;
-  context.fillText("Arrow keys / WASD to move", 48, 84);
-  context.fillText(`Position: ${Math.round(state.player.x)}, ${Math.round(state.player.y)}`, 48, 110);
+  context.fillText(state.map.name, 48, 76);
+  context.fillText("Arrow keys / WASD to move", 48, 102);
+  context.fillText(`Position: ${Math.round(state.player.x)}, ${Math.round(state.player.y)}`, 48, 128);
+}
+
+function drawTransitionMessage(context, state) {
+  if (state.transition.timer <= 0) {
+    return;
+  }
+
+  const alpha = Math.min(1, state.transition.timer);
+  context.globalAlpha = alpha;
+  context.fillStyle = "rgba(15, 23, 42, 0.84)";
+  context.fillRect(CANVAS_WIDTH / 2 - 180, CANVAS_HEIGHT - 96, 360, 56);
+  drawCenteredText(context, state.transition.message, CANVAS_HEIGHT - 68, 20, COLORS.text);
+  context.globalAlpha = 1;
 }
 
 function drawCenteredText(context, text, y, size, color) {
