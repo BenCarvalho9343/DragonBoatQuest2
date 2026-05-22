@@ -84,7 +84,8 @@ export class Game {
       this.state.screen = GAME_STATES.TEST_MAP;
       startSystemDialogue(this.state, "Coach Tim", [
         "Welcome to Secklow Hundred, [name].",
-        "This is still a test field, but the game now knows your name.",
+        "This is Caldecotte Lake. Prototype version, naturally.",
+        "The crew are scattered around the lake. Go have a look before we even think about racing.",
         "When this dialogue closes, you can move again.",
       ], [
         {

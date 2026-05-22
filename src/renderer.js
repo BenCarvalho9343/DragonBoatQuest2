@@ -24,7 +24,7 @@ function clear(context) {
 
 function renderTitle(context, state) {
   drawCenteredText(context, "DRAGON BOAT QUEST 2", 120, 44, COLORS.gold);
-  drawCenteredText(context, "Phase 5 Opening Scene Test", 180, 22, COLORS.text);
+  drawCenteredText(context, "Phase 6 Caldecotte Slice", 180, 22, COLORS.text);
 
   const pulse = Math.sin(state.elapsed * 4) * 0.5 + 0.5;
   context.globalAlpha = 0.55 + pulse * 0.45;
@@ -83,7 +83,7 @@ function drawTile(context, tile, x, y) {
   context.fillStyle = getTileColor(tile);
   context.fillRect(Math.round(x), Math.round(y), TILE_SIZE, TILE_SIZE);
 
-  if (tile === "P" || tile === "D") {
+  if (["P", "D", "K", "B", "C", "S", "R"].includes(tile)) {
     context.strokeStyle = "rgba(15, 23, 42, 0.2)";
     context.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
   }
@@ -96,8 +96,20 @@ function getTileColor(tile) {
   if (tile === "P") {
     return COLORS.path;
   }
-  if (tile === "D") {
+  if (tile === "D" || tile === "K") {
     return COLORS.dock;
+  }
+  if (tile === "B") {
+    return COLORS.boathouse;
+  }
+  if (tile === "C") {
+    return COLORS.carPark;
+  }
+  if (tile === "S") {
+    return COLORS.noticeboard;
+  }
+  if (tile === "R") {
+    return COLORS.bench;
   }
   if (tile === "T") {
     return COLORS.tree;
@@ -173,7 +185,7 @@ function drawHud(context, state) {
   context.textAlign = "left";
   context.textBaseline = "top";
   context.font = "22px monospace";
-  context.fillText("Phase 5 Opening", 48, 48);
+  context.fillText("Phase 6 Caldecotte", 48, 48);
 
   context.font = "16px monospace";
   context.fillStyle = COLORS.mutedText;

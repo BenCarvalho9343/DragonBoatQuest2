@@ -14,6 +14,6 @@ export function createInitialState() {
     },
     progress: createProgressState(),
     dialogue: createDialogueState(),
-    ...createMapState("test-field"),
+    ...createMapState("caldecotte-lake"),
   };
 }
