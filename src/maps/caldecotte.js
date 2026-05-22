@@ -37,7 +37,7 @@ export const caldecotte = {
     {
       id: "lesley-caldecotte",
       name: "Lesley",
-      x: 6,
+      x: 10,
       y: 17,
       width: 1,
       height: 1,
@@ -78,7 +78,7 @@ export const caldecotte = {
       id: "noticeboard-member-caldecotte",
       name: "Club Member",
       x: 12,
-      y: 12,
+      y: 13,
       width: 1,
       height: 1,
       dialogueId: "noticeboardMemberCaldecotte",
