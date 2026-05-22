@@ -48,6 +48,14 @@ export class Game {
       return;
     }
 
+    if (this.state.screen === GAME_STATES.CREW) {
+      if (this.input.wasPressed("KeyC", "Escape")) {
+        this.state.screen = GAME_STATES.TEST_MAP;
+      }
+
+      return;
+    }
+
     if (this.state.screen === GAME_STATES.TEST_MAP) {
       updateMapTransition(this.state, delta);
       if (this.state.dialogue.active) {
@@ -55,6 +63,11 @@ export class Game {
           advanceDialogue(this.state);
         }
 
+        return;
+      }
+
+      if (this.input.wasPressed("KeyC")) {
+        this.state.screen = GAME_STATES.CREW;
         return;
       }
 

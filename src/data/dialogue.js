@@ -1,6 +1,16 @@
 export const dialogue = {
   coachTimCaldecotte: {
     speaker: "Coach Tim",
+    variants: [
+      {
+        requires: ["caldecotte_crew_ready"],
+        lines: [
+          "That's the Caldecotte crew gathered.",
+          "Lesley, Marcus, Dan, Naomi. Nobody has run away yet.",
+          "Next we make this mean something on race day.",
+        ],
+      },
+    ],
     lines: [
       "This is Caldecotte Lake.",
       "Boathouse to the west. Dock to the south-east. Car park up north.",
@@ -9,34 +19,94 @@ export const dialogue = {
   },
   lesleyCaldecotte: {
     speaker: "Lesley",
+    variants: [
+      {
+        requires: ["recruited_lesley"],
+        lines: [
+          "I'm with you already.",
+          "Seven years at Secklow, and somehow this still feels like the sensible choice.",
+        ],
+      },
+    ],
     lines: [
       "Oh, a new face! Tim said you'd be coming.",
       "I've been with Secklow seven years. Don't let the others intimidate you.",
       "Right, let's get to the dock.",
     ],
+    events: [
+      {
+        type: "addCrew",
+        crewId: "lesley",
+      },
+    ],
   },
   marcusCaldecotte: {
     speaker: "Marcus",
+    variants: [
+      {
+        requires: ["recruited_marcus"],
+        lines: [
+          "Already signed up.",
+          "I'll keep an eye on the race order. Somebody has to.",
+        ],
+      },
+    ],
     lines: [
       "You must be the new recruit. Good timing.",
       "Soaring Dragons are coming today for a friendly. They won't be taking it easy on us.",
       "I'm in.",
     ],
+    events: [
+      {
+        type: "addCrew",
+        crewId: "marcus",
+      },
+    ],
   },
   danCaldecotte: {
     speaker: "Dan",
+    variants: [
+      {
+        requires: ["recruited_dan"],
+        lines: [
+          "I'm ready when you are.",
+          "Still a nice lake. Still not a rest day, apparently.",
+        ],
+      },
+    ],
     lines: [
       "Nice lake, isn't it? I come here even on rest days.",
       "Tim's been talking about this season for months. Says we've got a real shot.",
       "Count me in.",
     ],
+    events: [
+      {
+        type: "addCrew",
+        crewId: "dan",
+      },
+    ],
   },
   naomiCaldecotte: {
     speaker: "Naomi",
+    variants: [
+      {
+        requires: ["recruited_naomi"],
+        lines: [
+          "I'm in.",
+          "And for the record, I still want the 2000m.",
+        ],
+      },
+    ],
     lines: [
       "Finally! I've been waiting by these cars for ages.",
       "Tell Tim I want to race the 2000m today. He always tries to stick me in the 200.",
       "Let's go.",
+    ],
+    events: [
+      {
+        type: "addCrew",
+        crewId: "naomi",
+      },
     ],
   },
   noticeboardMemberCaldecotte: {

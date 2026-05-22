@@ -1,4 +1,6 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GAME_STATES, TILE_SIZE } from "./constants.js";
+import { caldecotteCrewIds, crew } from "./data/crew.js";
+import { getCrewTotals, getRecruitedCrew } from "./systems/crew.js";
 
 export function render(context, state) {
   context.imageSmoothingEnabled = false;
@@ -14,6 +16,12 @@ export function render(context, state) {
     return;
   }
 
+  if (state.screen === GAME_STATES.CREW) {
+    renderTestMap(context, state);
+    renderCrewScreen(context, state);
+    return;
+  }
+
   renderTestMap(context, state);
 }
 
@@ -24,7 +32,7 @@ function clear(context) {
 
 function renderTitle(context, state) {
   drawCenteredText(context, "DRAGON BOAT QUEST 2", 120, 44, COLORS.gold);
-  drawCenteredText(context, "Phase 6 Caldecotte Slice", 180, 22, COLORS.text);
+  drawCenteredText(context, "Phase 7 Crew Recruitment", 180, 22, COLORS.text);
 
   const pulse = Math.sin(state.elapsed * 4) * 0.5 + 0.5;
   context.globalAlpha = 0.55 + pulse * 0.45;
@@ -185,19 +193,14 @@ function drawHud(context, state) {
   context.textAlign = "left";
   context.textBaseline = "top";
   context.font = "22px monospace";
-  context.fillText("Phase 6 Caldecotte", 48, 48);
+  context.fillText("Phase 7 Crew", 48, 48);
 
   context.font = "16px monospace";
   context.fillStyle = COLORS.mutedText;
   context.fillText(state.map.name, 48, 76);
-  context.fillText("Arrows/WASD move, Space talks", 48, 102);
+  context.fillText("Arrows/WASD move, Space talks, C crew", 48, 102);
   context.fillText(`Position: ${Math.round(state.player.x)}, ${Math.round(state.player.y)}`, 48, 128);
-  context.fillText(`Flags: ${getActiveFlagText(state)}`, 48, 134 + 20);
-}
-
-function getActiveFlagText(state) {
-  const activeFlags = Object.keys(state.progress.flags).filter((flag) => state.progress.flags[flag]);
-  return activeFlags.length ? activeFlags.join(", ") : "none";
+  context.fillText(`Crew: ${state.progress.recruitedCrew.length}/${caldecotteCrewIds.length}`, 48, 154);
 }
 
 function drawTransitionMessage(context, state) {
@@ -244,6 +247,73 @@ function drawDialogueBox(context, state) {
   context.font = "14px monospace";
   context.textAlign = "right";
   context.fillText("Space", boxX + boxWidth - 24, boxY + boxHeight - 28);
+}
+
+function renderCrewScreen(context, state) {
+  const recruitedCrew = getRecruitedCrew(state);
+  const totals = getCrewTotals(state);
+  const boxX = 64;
+  const boxY = 42;
+  const boxWidth = CANVAS_WIDTH - 128;
+  const boxHeight = CANVAS_HEIGHT - 84;
+
+  context.fillStyle = "rgba(15, 23, 42, 0.96)";
+  context.fillRect(boxX, boxY, boxWidth, boxHeight);
+  context.strokeStyle = COLORS.gold;
+  context.lineWidth = 3;
+  context.strokeRect(boxX + 1.5, boxY + 1.5, boxWidth - 3, boxHeight - 3);
+
+  context.fillStyle = COLORS.gold;
+  context.font = "28px monospace";
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.fillText("Crew", boxX + 28, boxY + 24);
+
+  context.fillStyle = COLORS.mutedText;
+  context.font = "16px monospace";
+  context.fillText("Press C or Escape to return", boxX + boxWidth - 300, boxY + 32);
+
+  context.fillStyle = COLORS.text;
+  context.font = "18px monospace";
+  context.fillText(`Recruited: ${recruitedCrew.length}/${caldecotteCrewIds.length}`, boxX + 28, boxY + 70);
+  context.fillText(`Power ${totals.power}   Timing ${totals.timing}   Stamina ${totals.stamina}`, boxX + 240, boxY + 70);
+
+  const slotX = boxX + 28;
+  let slotY = boxY + 116;
+
+  for (const crewId of caldecotteCrewIds) {
+    const member = crew[crewId];
+    const isRecruited = state.progress.recruitedCrew.includes(crewId);
+
+    context.fillStyle = isRecruited ? "rgba(56, 189, 248, 0.16)" : "rgba(148, 163, 184, 0.12)";
+    context.fillRect(slotX, slotY, boxWidth - 56, 66);
+
+    context.strokeStyle = isRecruited ? "rgba(56, 189, 248, 0.7)" : "rgba(148, 163, 184, 0.35)";
+    context.lineWidth = 2;
+    context.strokeRect(slotX + 1, slotY + 1, boxWidth - 58, 64);
+
+    context.fillStyle = isRecruited ? COLORS.text : COLORS.mutedText;
+    context.font = "20px monospace";
+    context.fillText(isRecruited ? member.name : "???", slotX + 18, slotY + 12);
+
+    context.font = "15px monospace";
+    const detail = isRecruited
+      ? `${member.role} | ${member.homeVenue}`
+      : "Find and speak to this crew member at Caldecotte.";
+    context.fillText(detail, slotX + 18, slotY + 38);
+
+    if (isRecruited) {
+      context.textAlign = "right";
+      context.fillText(
+        `P${member.stats.power} T${member.stats.timing} S${member.stats.stamina}`,
+        slotX + boxWidth - 78,
+        slotY + 38,
+      );
+      context.textAlign = "left";
+    }
+
+    slotY += 78;
+  }
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {

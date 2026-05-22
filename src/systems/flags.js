@@ -1,3 +1,5 @@
+import { recruitCrewMember } from "./crew.js";
+
 export function createProgressState() {
   return {
     flags: {},
@@ -19,6 +21,8 @@ export function applyEvents(state, events = []) {
   for (const event of events) {
     if (event.type === "setFlag") {
       setFlag(state, event.flag, event.value ?? true);
+    } else if (event.type === "addCrew") {
+      recruitCrewMember(state, event.crewId);
     }
   }
 }
