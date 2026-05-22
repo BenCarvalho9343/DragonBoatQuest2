@@ -13,22 +13,22 @@ export function createDialogueState() {
 }
 
 export function tryStartDialogue(state) {
-  const npc = getFacingNpc(state);
+  const target = getInteractionTarget(state);
 
-  if (!npc) {
+  if (!target) {
     return false;
   }
 
-  const script = dialogue[npc.dialogueId];
+  const script = dialogue[target.dialogueId];
 
   if (!script) {
-    throw new Error(`Missing dialogue script: ${npc.dialogueId}`);
+    throw new Error(`Missing dialogue script: ${target.dialogueId}`);
   }
 
   state.dialogue.active = true;
   const variant = resolveDialogueVariant(state, script);
 
-  state.dialogue.speaker = variant.speaker ?? script.speaker ?? npc.name;
+  state.dialogue.speaker = variant.speaker ?? script.speaker ?? target.name;
   state.dialogue.lines = formatLines(state, variant.lines);
   state.dialogue.lineIndex = 0;
   state.dialogue.events = variant.events ?? [];
@@ -77,9 +77,25 @@ function formatLines(state, lines) {
   return lines.map((line) => line.replaceAll("[name]", playerName));
 }
 
+function getInteractionTarget(state) {
+  return getFacingNpc(state) ?? getFacingInteractable(state);
+}
+
 function getFacingNpc(state) {
   const tile = getFacingTile(state.player);
   return (state.map.npcs ?? []).find((npc) => isTileInsideNpc(npc, tile.x, tile.y));
+}
+
+function getFacingInteractable(state) {
+  const facingTile = getFacingTile(state.player);
+  const currentTile = getCurrentTile(state.player);
+
+  return (state.map.interactables ?? []).find((interactable) => {
+    return (
+      isTileInsideTarget(interactable, facingTile.x, facingTile.y) ||
+      isTileInsideTarget(interactable, currentTile.x, currentTile.y)
+    );
+  });
 }
 
 function getFacingTile(player) {
@@ -101,6 +117,17 @@ function getFacingTile(player) {
   return { x: tileX, y: tileY };
 }
 
+function getCurrentTile(player) {
+  return {
+    x: Math.floor((player.x + player.width / 2) / TILE_SIZE),
+    y: Math.floor((player.y + player.height / 2) / TILE_SIZE),
+  };
+}
+
 function isTileInsideNpc(npc, tileX, tileY) {
-  return tileX >= npc.x && tileX < npc.x + npc.width && tileY >= npc.y && tileY < npc.y + npc.height;
+  return isTileInsideTarget(npc, tileX, tileY);
+}
+
+function isTileInsideTarget(target, tileX, tileY) {
+  return tileX >= target.x && tileX < target.x + target.width && tileY >= target.y && tileY < target.y + target.height;
 }

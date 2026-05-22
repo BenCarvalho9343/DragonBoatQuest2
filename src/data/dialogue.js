@@ -132,6 +132,37 @@ export const dialogue = {
       "The bends are the tricky bit. Press Z at exactly the right moment.",
     ],
   },
+  caldecotteDock: {
+    speaker: "Coach Tim",
+    variants: [
+      {
+        requires: ["caldecotte_race_day_ready"],
+        lines: [
+          "Race day is ready.",
+          "In the next phase, this dock will take us into the first proper race setup.",
+        ],
+      },
+      {
+        requires: ["caldecotte_crew_ready"],
+        lines: [
+          "Right. That's the Caldecotte crew gathered.",
+          "Lesley, Marcus, Dan, Naomi. Enough to make this look intentional.",
+          "Race day setup is unlocked. Actual racing comes next.",
+        ],
+        events: [
+          {
+            type: "setFlag",
+            flag: "caldecotte_race_day_ready",
+          },
+        ],
+      },
+    ],
+    lines: [
+      "We're not racing with half a crew.",
+      "Find Lesley, Marcus, Dan, and Naomi around the lake.",
+      "Then come back to the dock.",
+    ],
+  },
   coachTimTest: {
     speaker: "Coach Tim",
     variants: [

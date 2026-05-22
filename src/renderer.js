@@ -32,7 +32,7 @@ function clear(context) {
 
 function renderTitle(context, state) {
   drawCenteredText(context, "DRAGON BOAT QUEST 2", 120, 44, COLORS.gold);
-  drawCenteredText(context, "Phase 7 Crew Recruitment", 180, 22, COLORS.text);
+  drawCenteredText(context, "Phase 8 Race-Day Gate", 180, 22, COLORS.text);
 
   const pulse = Math.sin(state.elapsed * 4) * 0.5 + 0.5;
   context.globalAlpha = 0.55 + pulse * 0.45;
@@ -193,14 +193,26 @@ function drawHud(context, state) {
   context.textAlign = "left";
   context.textBaseline = "top";
   context.font = "22px monospace";
-  context.fillText("Phase 7 Crew", 48, 48);
+  context.fillText("Phase 8 Dock Gate", 48, 48);
 
   context.font = "16px monospace";
   context.fillStyle = COLORS.mutedText;
   context.fillText(state.map.name, 48, 76);
   context.fillText("Arrows/WASD move, Space talks, C crew", 48, 102);
   context.fillText(`Position: ${Math.round(state.player.x)}, ${Math.round(state.player.y)}`, 48, 128);
-  context.fillText(`Crew: ${state.progress.recruitedCrew.length}/${caldecotteCrewIds.length}`, 48, 154);
+  context.fillText(
+    `Crew: ${state.progress.recruitedCrew.length}/${caldecotteCrewIds.length}  Dock: ${getDockStatus(state)}`,
+    48,
+    154,
+  );
+}
+
+function getDockStatus(state) {
+  if (state.progress.flags.caldecotte_race_day_ready) {
+    return "ready";
+  }
+
+  return state.progress.flags.caldecotte_crew_ready ? "unlocked" : "locked";
 }
 
 function drawTransitionMessage(context, state) {

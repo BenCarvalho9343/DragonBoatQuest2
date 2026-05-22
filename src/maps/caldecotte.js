@@ -23,6 +23,17 @@ export const caldecotte = {
       lockedMessage: "The route away from Caldecotte is not open yet.",
     },
   ],
+  interactables: [
+    {
+      id: "caldecotte-dock",
+      name: "Dock",
+      x: 26,
+      y: 20,
+      width: 5,
+      height: 3,
+      dialogueId: "caldecotteDock",
+    },
+  ],
   npcs: [
     {
       id: "coach-tim-caldecotte",
