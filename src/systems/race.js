@@ -6,8 +6,11 @@ const PERFECT_WINDOW = 0.08;
 const GOOD_WINDOW = 0.16;
 const NOTE_LEAD_IN = 1.6;
 const NOTE_COUNT = 32;
-const BASE_SPEED = 3;
+const BASE_SPEED = 7.8;
 const RIVAL_SPEED = 10.4;
+const PERFECT_SPEED_BOOST = 2.6;
+const GOOD_SPEED_BOOST = 1.4;
+const SPEED_BOOST_DECAY = 3.2;
 
 export function prepareRace(state, raceDayId, raceId) {
   const race = getRace(raceDayId, raceId);
@@ -20,11 +23,10 @@ export function prepareRace(state, raceDayId, raceId) {
     elapsed: 0,
     progress: 0,
     rivalProgress: 0,
+    speedBoost: 0,
     beatTimer: 0,
     beatInterval,
     notes: createNotes(beatInterval),
-    perfectBoost: distance / NOTE_COUNT,
-    goodBoost: distance / NOTE_COUNT * 0.68,
     feedback: "Ready",
     feedbackTimer: 0.8,
     perfect: 0,
@@ -40,6 +42,7 @@ export function startRace(state) {
   state.race.elapsed = 0;
   state.race.progress = 0;
   state.race.rivalProgress = 0;
+  state.race.speedBoost = 0;
   state.race.beatTimer = 0;
   state.race.feedback = "Go";
   state.race.feedbackTimer = 0.8;
@@ -52,8 +55,9 @@ export function updateRace(state, input, delta) {
 
   state.race.elapsed += delta;
   state.race.beatTimer = (state.race.beatTimer + delta) % state.race.beatInterval;
-  state.race.progress = Math.min(distance, state.race.progress + BASE_SPEED * delta);
+  state.race.progress = Math.min(distance, state.race.progress + (BASE_SPEED + state.race.speedBoost) * delta);
   state.race.rivalProgress = Math.min(distance, state.race.rivalProgress + RIVAL_SPEED * delta);
+  state.race.speedBoost = Math.max(0, state.race.speedBoost - SPEED_BOOST_DECAY * delta);
   state.race.feedbackTimer = Math.max(0, state.race.feedbackTimer - delta);
 
   if (input.wasPressed("Space")) {
@@ -91,7 +95,7 @@ function judgeTap(state) {
     note.judged = true;
     note.result = "perfect";
     state.race.perfect += 1;
-    state.race.progress += state.race.perfectBoost;
+    state.race.speedBoost += PERFECT_SPEED_BOOST;
     setFeedback(state, "Perfect");
     return;
   }
@@ -100,7 +104,7 @@ function judgeTap(state) {
     note.judged = true;
     note.result = "good";
     state.race.good += 1;
-    state.race.progress += state.race.goodBoost;
+    state.race.speedBoost += GOOD_SPEED_BOOST;
     setFeedback(state, "Good");
   }
 }
