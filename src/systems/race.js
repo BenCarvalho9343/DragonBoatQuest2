@@ -7,8 +7,9 @@ const GOOD_WINDOW = 0.16;
 const NOTE_LEAD_IN = 1.6;
 const NOTE_COUNT = 32;
 const BASE_SPEED = 3;
+const RIVAL_SPEED = 10.4;
 
-export function startRace(state, raceDayId, raceId) {
+export function prepareRace(state, raceDayId, raceId) {
   const race = getRace(raceDayId, raceId);
   const beatInterval = 60 / race.bpm;
   const distance = getRaceDistance(race);
@@ -18,6 +19,7 @@ export function startRace(state, raceDayId, raceId) {
     raceId,
     elapsed: 0,
     progress: 0,
+    rivalProgress: 0,
     beatTimer: 0,
     beatInterval,
     notes: createNotes(beatInterval),
@@ -31,13 +33,27 @@ export function startRace(state, raceDayId, raceId) {
     taps: 0,
     result: "",
   };
+  state.screen = GAME_STATES.RACE_READY;
+}
+
+export function startRace(state) {
+  state.race.elapsed = 0;
+  state.race.progress = 0;
+  state.race.rivalProgress = 0;
+  state.race.beatTimer = 0;
+  state.race.feedback = "Go";
+  state.race.feedbackTimer = 0.8;
   state.screen = GAME_STATES.RACE;
 }
 
 export function updateRace(state, input, delta) {
+  const race = getCurrentRace(state);
+  const distance = getRaceDistance(race);
+
   state.race.elapsed += delta;
   state.race.beatTimer = (state.race.beatTimer + delta) % state.race.beatInterval;
-  state.race.progress += BASE_SPEED * delta;
+  state.race.progress = Math.min(distance, state.race.progress + BASE_SPEED * delta);
+  state.race.rivalProgress = Math.min(distance, state.race.rivalProgress + RIVAL_SPEED * delta);
   state.race.feedbackTimer = Math.max(0, state.race.feedbackTimer - delta);
 
   if (input.wasPressed("Space")) {

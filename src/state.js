@@ -22,6 +22,7 @@ export function createInitialState() {
       raceId: "",
       elapsed: 0,
       progress: 0,
+      rivalProgress: 0,
       beatTimer: 0,
       beatInterval: 0,
       notes: [],

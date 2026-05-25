@@ -30,6 +30,11 @@ export function render(context, state) {
     return;
   }
 
+  if (state.screen === GAME_STATES.RACE_READY) {
+    renderRaceReadyScreen(context, state);
+    return;
+  }
+
   if (state.screen === GAME_STATES.RACE) {
     renderRaceScreen(context, state);
     return;
@@ -435,57 +440,126 @@ function renderRaceScreen(context, state) {
   const race = getCurrentRace(state);
   const distance = getRaceDistance(race);
   const progressRatio = Math.min(1, state.race.progress / distance);
-  const trackX = 96;
-  const trackY = 294;
-  const trackWidth = CANVAS_WIDTH - 192;
-  const boatX = trackX + progressRatio * (trackWidth - 52);
+  const rivalRatio = Math.min(1, state.race.rivalProgress / distance);
+  const waterX = 0;
+  const waterY = 0;
+  const waterWidth = CANVAS_WIDTH;
+  const waterHeight = 418;
+  const raceStartX = 92;
+  const raceEndX = CANVAS_WIDTH - 86;
+  const boatX = raceStartX + progressRatio * (raceEndX - raceStartX - 58);
+  const rivalX = raceStartX + rivalRatio * (raceEndX - raceStartX - 58);
 
   context.fillStyle = "#10233d";
   context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  drawCenteredText(context, "Caldecotte Lake", 64, 28, COLORS.gold);
-  drawCenteredText(context, `${race.distance} vs Soaring Dragons`, 104, 20, COLORS.text);
-  drawCenteredText(context, "Tap Space when a box reaches the gold bar", 142, 18, COLORS.mutedText);
-
-  drawNoteHighway(context, state, 96, 178, trackWidth);
-
   context.fillStyle = "rgba(40, 122, 155, 0.95)";
-  context.fillRect(trackX, trackY, trackWidth, 96);
-  context.strokeStyle = COLORS.gold;
-  context.lineWidth = 3;
-  context.strokeRect(trackX + 1.5, trackY + 1.5, trackWidth - 3, 96 - 3);
+  context.fillRect(waterX, waterY, waterWidth, waterHeight);
 
   context.fillStyle = "rgba(248, 250, 252, 0.28)";
-  for (let x = trackX + 32; x < trackX + trackWidth; x += 42) {
-    context.fillRect(x, trackY + 24, 22, 3);
-    context.fillRect(x + 10, trackY + 58, 22, 3);
+  for (let x = 28; x < CANVAS_WIDTH; x += 58) {
+    context.fillRect(x, 42, 22, 3);
+    context.fillRect(x + 18, 172, 22, 3);
+    context.fillRect(x + 8, 320, 22, 3);
   }
 
-  context.fillStyle = COLORS.dock;
-  context.fillRect(Math.round(boatX), trackY + 34, 52, 28);
-  context.fillStyle = COLORS.player;
-  context.fillRect(Math.round(boatX) + 8, trackY + 28, 36, 8);
-  context.fillStyle = COLORS.gold;
-  context.fillRect(trackX + trackWidth - 12, trackY, 6, 96);
+  drawLaneLine(context, 112);
+  drawLaneLine(context, 218);
+  drawLaneLine(context, 324);
+  drawRaceBoat(context, rivalX, 104, COLORS.npc, "SOA");
+  drawRaceBoat(context, boatX, 210, COLORS.player, "SH");
+  drawRaceBoat(context, raceStartX + 28 + Math.sin(state.race.elapsed * 1.6) * 8, 316, COLORS.npcAlt, "LANE");
 
+  context.fillStyle = COLORS.gold;
+  context.fillRect(raceEndX, 54, 6, 320);
+
+  context.fillStyle = "rgba(15, 23, 42, 0.84)";
+  context.fillRect(18, 18, 238, 74);
   context.fillStyle = COLORS.text;
-  context.font = "20px monospace";
+  context.font = "18px monospace";
   context.textAlign = "left";
   context.textBaseline = "top";
-  context.fillText(`Progress ${Math.floor(state.race.progress)} / ${distance}m`, trackX, 420);
-  context.fillText(`Perfect ${state.race.perfect}   Good ${state.race.good}   Miss ${state.race.misses}`, trackX, 452);
+  context.fillText(`${race.distance}`, 36, 34);
+  context.fillText(`${Math.floor(state.race.progress)} / ${distance}m`, 36, 62);
+
+  context.textAlign = "right";
+  context.fillText(`P ${state.race.perfect}  G ${state.race.good}  M ${state.race.misses}`, CANVAS_WIDTH - 28, 22);
 
   if (state.race.feedbackTimer > 0) {
     context.fillStyle = getFeedbackColor(state.race.feedback);
     context.font = "38px monospace";
     context.textAlign = "center";
-    context.fillText(state.race.feedback, CANVAS_WIDTH / 2, 492);
+    context.fillText(state.race.feedback, CANVAS_WIDTH / 2, 374);
   }
+
+  drawNoteHighway(context, state, 64, 438, CANVAS_WIDTH - 128);
+}
+
+function renderRaceReadyScreen(context, state) {
+  const race = getCurrentRace(state);
+  const boxX = 124;
+  const boxY = 80;
+  const boxWidth = CANVAS_WIDTH - 248;
+  const boxHeight = CANVAS_HEIGHT - 160;
+
+  context.fillStyle = "#10233d";
+  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  context.fillStyle = "rgba(40, 122, 155, 0.95)";
+  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  context.fillStyle = "rgba(15, 23, 42, 0.94)";
+  context.fillRect(boxX, boxY, boxWidth, boxHeight);
+  context.strokeStyle = COLORS.gold;
+  context.lineWidth = 3;
+  context.strokeRect(boxX + 1.5, boxY + 1.5, boxWidth - 3, boxHeight - 3);
+
+  context.textAlign = "center";
+  context.textBaseline = "top";
+  context.fillStyle = COLORS.gold;
+  context.font = "30px monospace";
+  context.fillText(`${race.distance} Start`, CANVAS_WIDTH / 2, boxY + 34);
+
+  context.fillStyle = COLORS.text;
+  context.font = "22px monospace";
+  context.fillText("Boxes will move toward the gold hit bar.", CANVAS_WIDTH / 2, boxY + 104);
+  context.fillText("Tap Space as each box crosses it.", CANVAS_WIDTH / 2, boxY + 142);
+  context.fillText("Perfect and Good hits move the boat forward.", CANVAS_WIDTH / 2, boxY + 180);
+
+  context.fillStyle = COLORS.mutedText;
+  context.font = "18px monospace";
+  context.fillText("Press Enter or Space to start", CANVAS_WIDTH / 2, boxY + 268);
+  context.fillText("Escape returns to the briefing", CANVAS_WIDTH / 2, boxY + 304);
+}
+
+function drawLaneLine(context, y) {
+  context.strokeStyle = "rgba(248, 250, 252, 0.25)";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(70, y + 44);
+  context.lineTo(CANVAS_WIDTH - 70, y + 44);
+  context.stroke();
+}
+
+function drawRaceBoat(context, x, y, color, label) {
+  const roundedX = Math.round(x);
+
+  context.fillStyle = "rgba(15, 23, 42, 0.28)";
+  context.fillRect(roundedX + 4, y + 38, 58, 7);
+  context.fillStyle = COLORS.dock;
+  context.fillRect(roundedX, y + 20, 64, 28);
+  context.fillStyle = color;
+  context.fillRect(roundedX + 8, y + 14, 48, 10);
+  context.fillStyle = COLORS.text;
+  context.font = "12px monospace";
+  context.textAlign = "center";
+  context.textBaseline = "top";
+  context.fillText(label, roundedX + 32, y - 2);
 }
 
 function drawNoteHighway(context, state, x, y, width) {
   const hitX = x + 108;
-  const laneHeight = 58;
+  const laneHeight = 64;
   const travelTime = 2.1;
   const noteSpeed = (width - 140) / travelTime;
   const perfectWidth = 18;
@@ -509,7 +583,7 @@ function drawNoteHighway(context, state, x, y, width) {
   context.font = "14px monospace";
   context.textAlign = "center";
   context.textBaseline = "top";
-  context.fillText("HIT", hitX, y + laneHeight + 12);
+  context.fillText("HIT", hitX, y + laneHeight - 18);
 
   for (const note of state.race.notes) {
     if (note.judged) {

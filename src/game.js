@@ -6,7 +6,7 @@ import { advanceDialogue, startSystemDialogue, tryStartDialogue } from "./system
 import { setFlag } from "./systems/flags.js";
 import { updateMapTransition } from "./systems/mapManager.js";
 import { updatePlayerMovement } from "./systems/movement.js";
-import { startRace, updateRace } from "./systems/race.js";
+import { prepareRace, startRace, updateRace } from "./systems/race.js";
 
 export class Game {
   constructor(canvas, input) {
@@ -66,7 +66,19 @@ export class Game {
 
       if (this.input.wasPressed("Space", "Enter")) {
         setFlag(this.state, "caldecotte_race_briefing_seen");
-        startRace(this.state, "caldecotte", "caldecotte-200m");
+        prepareRace(this.state, "caldecotte", "caldecotte-200m");
+      }
+
+      return;
+    }
+
+    if (this.state.screen === GAME_STATES.RACE_READY) {
+      if (this.input.wasPressed("Escape")) {
+        this.state.screen = GAME_STATES.RACE_SETUP;
+      }
+
+      if (this.input.wasPressed("Space", "Enter")) {
+        startRace(this.state);
       }
 
       return;
