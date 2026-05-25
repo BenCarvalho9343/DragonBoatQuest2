@@ -1,6 +1,7 @@
 import { GAME_STATES } from "./constants.js";
 import { createInitialState } from "./state.js";
 import { render } from "./renderer.js";
+import { recruitCaldecotteCrew } from "./systems/crew.js";
 import { advanceDialogue, startSystemDialogue, tryStartDialogue } from "./systems/dialogue.js";
 import { setFlag } from "./systems/flags.js";
 import { updateMapTransition } from "./systems/mapManager.js";
@@ -100,6 +101,16 @@ export class Game {
 
       if (this.input.wasPressed("KeyC")) {
         this.state.screen = GAME_STATES.CREW;
+        return;
+      }
+
+      if (this.input.wasPressed("KeyL")) {
+        const recruitedCount = recruitCaldecotteCrew(this.state);
+        startSystemDialogue(this.state, "Dev Shortcut", [
+          recruitedCount > 0
+            ? "Caldecotte crew recruited. The dock is ready."
+            : "Caldecotte crew was already recruited. The dock is ready.",
+        ]);
         return;
       }
 

@@ -15,6 +15,18 @@ export function recruitCrewMember(state, crewId) {
   return true;
 }
 
+export function recruitCaldecotteCrew(state) {
+  let recruitedCount = 0;
+
+  for (const crewId of caldecotteCrewIds) {
+    if (recruitCrewMember(state, crewId)) {
+      recruitedCount += 1;
+    }
+  }
+
+  return recruitedCount;
+}
+
 export function isCrewMemberRecruited(state, crewId) {
   return state.progress.recruitedCrew.includes(crewId);
 }
