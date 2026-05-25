@@ -378,32 +378,33 @@ function renderRaceSetupScreen(context, state) {
   context.fillText("Press Enter or Space to continue. Escape returns to the map.", boxX + 28, boxY + 96);
 
   context.fillStyle = "rgba(250, 204, 21, 0.12)";
-  context.fillRect(boxX + 28, boxY + 132, boxWidth - 56, 86);
+  context.fillRect(boxX + 28, boxY + 132, boxWidth - 56, 120);
   context.strokeStyle = "rgba(250, 204, 21, 0.45)";
   context.lineWidth = 2;
-  context.strokeRect(boxX + 29, boxY + 133, boxWidth - 58, 84);
+  context.strokeRect(boxX + 29, boxY + 133, boxWidth - 58, 118);
 
   context.fillStyle = COLORS.gold;
   context.font = "18px monospace";
   context.fillText(raceDay.briefingSpeaker, boxX + 48, boxY + 150);
 
   context.fillStyle = COLORS.text;
-  context.font = "17px monospace";
-  raceDay.briefing.forEach((line, index) => {
-    context.fillText(line, boxX + 48, boxY + 178 + index * 24);
-  });
+  context.font = "16px monospace";
+  let briefingY = boxY + 178;
+  for (const line of raceDay.briefing) {
+    briefingY = wrapText(context, line, boxX + 48, briefingY, boxWidth - 96, 21);
+  }
 
   context.fillStyle = COLORS.text;
   context.font = "20px monospace";
-  context.fillText("Race Order", boxX + 28, boxY + 250);
+  context.fillText("Race Order", boxX + 28, boxY + 282);
 
-  let raceY = boxY + 288;
+  let raceY = boxY + 316;
   for (const race of raceDay.races) {
     context.fillStyle = "rgba(56, 189, 248, 0.12)";
-    context.fillRect(boxX + 28, raceY, boxWidth - 56, 52);
+    context.fillRect(boxX + 28, raceY, boxWidth - 56, 44);
     context.strokeStyle = "rgba(56, 189, 248, 0.38)";
     context.lineWidth = 2;
-    context.strokeRect(boxX + 29, raceY + 1, boxWidth - 58, 50);
+    context.strokeRect(boxX + 29, raceY + 1, boxWidth - 58, 42);
 
     context.fillStyle = COLORS.text;
     context.font = "18px monospace";
@@ -415,7 +416,7 @@ function renderRaceSetupScreen(context, state) {
     context.fillText(`Bends ${race.bends}`, boxX + 330, raceY + 16);
     context.fillText(race.difficulty, boxX + 480, raceY + 16);
 
-    raceY += 64;
+    raceY += 52;
   }
 }
 
@@ -438,7 +439,10 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
 
   if (line) {
     context.fillText(line, x, lineY);
+    lineY += lineHeight;
   }
+
+  return lineY;
 }
 
 function drawCenteredText(context, text, y, size, color) {
