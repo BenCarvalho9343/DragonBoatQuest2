@@ -171,7 +171,6 @@ function renderTestMap(context, state) {
   drawExits(context, state);
   drawNpcs(context, state);
   drawPlayer(context, state);
-  drawHud(context, state);
   drawTransitionMessage(context, state);
   drawDialogueBox(context, state);
 }
@@ -224,36 +223,6 @@ function drawPlayer(context, state) {
   const eyeY = player.direction === "up" ? y + 7 : y + 10;
   context.fillRect(x + 5, eyeY, 3, 3);
   context.fillRect(x + player.width - 8, eyeY, 3, 3);
-}
-
-function drawHud(context, state) {
-  context.fillStyle = COLORS.panel;
-  context.fillRect(24, 24, 430, 160);
-
-  context.fillStyle = COLORS.text;
-  context.textAlign = "left";
-  context.textBaseline = "top";
-  context.font = "22px monospace";
-  context.fillText("Phase 8 Dock Gate", 48, 48);
-
-  context.font = "16px monospace";
-  context.fillStyle = COLORS.mutedText;
-  context.fillText(state.map.name, 48, 76);
-  context.fillText("Arrows/WASD move, Space talks, C crew", 48, 102);
-  context.fillText(`Position: ${Math.round(state.player.x)}, ${Math.round(state.player.y)}`, 48, 128);
-  context.fillText(
-    `Crew: ${state.progress.recruitedCrew.length}/${caldecotteCrewIds.length}  Dock: ${getDockStatus(state)}`,
-    48,
-    154,
-  );
-}
-
-function getDockStatus(state) {
-  if (state.progress.flags.caldecotte_race_day_ready) {
-    return "ready";
-  }
-
-  return state.progress.flags.caldecotte_crew_ready ? "unlocked" : "locked";
 }
 
 function drawTransitionMessage(context, state) {
