@@ -30,4 +30,5 @@ export const GAME_STATES = {
   NAME_ENTRY: "nameEntry",
   TEST_MAP: "testMap",
   CREW: "crew",
+  RACE_SETUP: "raceSetup",
 };

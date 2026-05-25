@@ -2,6 +2,7 @@ import { GAME_STATES } from "./constants.js";
 import { createInitialState } from "./state.js";
 import { render } from "./renderer.js";
 import { advanceDialogue, startSystemDialogue, tryStartDialogue } from "./systems/dialogue.js";
+import { setFlag } from "./systems/flags.js";
 import { updateMapTransition } from "./systems/mapManager.js";
 import { updatePlayerMovement } from "./systems/movement.js";
 
@@ -51,6 +52,23 @@ export class Game {
     if (this.state.screen === GAME_STATES.CREW) {
       if (this.input.wasPressed("KeyC", "Escape")) {
         this.state.screen = GAME_STATES.TEST_MAP;
+      }
+
+      return;
+    }
+
+    if (this.state.screen === GAME_STATES.RACE_SETUP) {
+      if (this.input.wasPressed("Escape")) {
+        this.state.screen = GAME_STATES.TEST_MAP;
+      }
+
+      if (this.input.wasPressed("Space", "Enter")) {
+        setFlag(this.state, "caldecotte_race_briefing_seen");
+        this.state.screen = GAME_STATES.TEST_MAP;
+        startSystemDialogue(this.state, "Coach Tim", [
+          "That's the briefing.",
+          "The next phase is where we actually put the boat on the start line.",
+        ]);
       }
 
       return;

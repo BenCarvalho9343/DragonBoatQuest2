@@ -139,7 +139,13 @@ export const dialogue = {
         requires: ["caldecotte_race_day_ready"],
         lines: [
           "Race day is ready.",
-          "In the next phase, this dock will take us into the first proper race setup.",
+          "Let's go through the briefing before Soaring Dragons start looking organised.",
+        ],
+        events: [
+          {
+            type: "openRaceSetup",
+            raceDayId: "caldecotte",
+          },
         ],
       },
       {
@@ -147,12 +153,16 @@ export const dialogue = {
         lines: [
           "Right. That's the Caldecotte crew gathered.",
           "Lesley, Marcus, Dan, Naomi. Enough to make this look intentional.",
-          "Race day setup is unlocked. Actual racing comes next.",
+          "Race day setup is unlocked. Try to look ready.",
         ],
         events: [
           {
             type: "setFlag",
             flag: "caldecotte_race_day_ready",
+          },
+          {
+            type: "openRaceSetup",
+            raceDayId: "caldecotte",
           },
         ],
       },

@@ -1,4 +1,5 @@
 import { recruitCrewMember } from "./crew.js";
+import { GAME_STATES } from "../constants.js";
 
 export function createProgressState() {
   return {
@@ -23,6 +24,9 @@ export function applyEvents(state, events = []) {
       setFlag(state, event.flag, event.value ?? true);
     } else if (event.type === "addCrew") {
       recruitCrewMember(state, event.crewId);
+    } else if (event.type === "openRaceSetup") {
+      state.raceSetup.raceDayId = event.raceDayId;
+      state.screen = GAME_STATES.RACE_SETUP;
     }
   }
 }

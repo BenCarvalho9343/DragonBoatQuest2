@@ -14,6 +14,9 @@ export function createInitialState() {
     },
     progress: createProgressState(),
     dialogue: createDialogueState(),
+    raceSetup: {
+      raceDayId: "",
+    },
     ...createMapState("caldecotte-lake"),
   };
 }

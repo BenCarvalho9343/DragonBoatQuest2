@@ -1,5 +1,6 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GAME_STATES, TILE_SIZE } from "./constants.js";
 import { caldecotteCrewIds, crew } from "./data/crew.js";
+import { raceDays } from "./data/raceDays.js";
 import { getCrewTotals, getRecruitedCrew } from "./systems/crew.js";
 
 export function render(context, state) {
@@ -22,6 +23,12 @@ export function render(context, state) {
     return;
   }
 
+  if (state.screen === GAME_STATES.RACE_SETUP) {
+    renderTestMap(context, state);
+    renderRaceSetupScreen(context, state);
+    return;
+  }
+
   renderTestMap(context, state);
 }
 
@@ -32,7 +39,7 @@ function clear(context) {
 
 function renderTitle(context, state) {
   drawCenteredText(context, "DRAGON BOAT QUEST 2", 120, 44, COLORS.gold);
-  drawCenteredText(context, "Phase 8 Race-Day Gate", 180, 22, COLORS.text);
+  drawCenteredText(context, "Phase 9 Race-Day Setup", 180, 22, COLORS.text);
 
   const pulse = Math.sin(state.elapsed * 4) * 0.5 + 0.5;
   context.globalAlpha = 0.55 + pulse * 0.45;
@@ -335,6 +342,80 @@ function renderCrewScreen(context, state) {
     }
 
     slotY += 78;
+  }
+}
+
+function renderRaceSetupScreen(context, state) {
+  const raceDay = raceDays[state.raceSetup.raceDayId];
+
+  if (!raceDay) {
+    return;
+  }
+
+  const boxX = 64;
+  const boxY = 38;
+  const boxWidth = CANVAS_WIDTH - 128;
+  const boxHeight = CANVAS_HEIGHT - 76;
+
+  context.fillStyle = "rgba(15, 23, 42, 0.96)";
+  context.fillRect(boxX, boxY, boxWidth, boxHeight);
+  context.strokeStyle = COLORS.gold;
+  context.lineWidth = 3;
+  context.strokeRect(boxX + 1.5, boxY + 1.5, boxWidth - 3, boxHeight - 3);
+
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.fillStyle = COLORS.gold;
+  context.font = "28px monospace";
+  context.fillText("Race Day", boxX + 28, boxY + 24);
+
+  context.fillStyle = COLORS.text;
+  context.font = "22px monospace";
+  context.fillText(`${raceDay.venue} vs ${raceDay.rival}`, boxX + 28, boxY + 64);
+
+  context.fillStyle = COLORS.mutedText;
+  context.font = "16px monospace";
+  context.fillText("Press Enter or Space to continue. Escape returns to the map.", boxX + 28, boxY + 96);
+
+  context.fillStyle = "rgba(250, 204, 21, 0.12)";
+  context.fillRect(boxX + 28, boxY + 132, boxWidth - 56, 86);
+  context.strokeStyle = "rgba(250, 204, 21, 0.45)";
+  context.lineWidth = 2;
+  context.strokeRect(boxX + 29, boxY + 133, boxWidth - 58, 84);
+
+  context.fillStyle = COLORS.gold;
+  context.font = "18px monospace";
+  context.fillText(raceDay.briefingSpeaker, boxX + 48, boxY + 150);
+
+  context.fillStyle = COLORS.text;
+  context.font = "17px monospace";
+  raceDay.briefing.forEach((line, index) => {
+    context.fillText(line, boxX + 48, boxY + 178 + index * 24);
+  });
+
+  context.fillStyle = COLORS.text;
+  context.font = "20px monospace";
+  context.fillText("Race Order", boxX + 28, boxY + 250);
+
+  let raceY = boxY + 288;
+  for (const race of raceDay.races) {
+    context.fillStyle = "rgba(56, 189, 248, 0.12)";
+    context.fillRect(boxX + 28, raceY, boxWidth - 56, 52);
+    context.strokeStyle = "rgba(56, 189, 248, 0.38)";
+    context.lineWidth = 2;
+    context.strokeRect(boxX + 29, raceY + 1, boxWidth - 58, 50);
+
+    context.fillStyle = COLORS.text;
+    context.font = "18px monospace";
+    context.fillText(race.distance, boxX + 48, raceY + 14);
+
+    context.fillStyle = COLORS.mutedText;
+    context.font = "16px monospace";
+    context.fillText(`BPM ${race.bpm}`, boxX + 200, raceY + 16);
+    context.fillText(`Bends ${race.bends}`, boxX + 330, raceY + 16);
+    context.fillText(race.difficulty, boxX + 480, raceY + 16);
+
+    raceY += 64;
   }
 }
 
