@@ -2,6 +2,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GAME_STATES, TILE_SIZE } from "./c
 import { caldecotteCrewIds, crew } from "./data/crew.js";
 import { raceDays } from "./data/raceDays.js";
 import { getCrewTotals, getRecruitedCrew } from "./systems/crew.js";
+import { getCurrentRace, getRaceDistance } from "./systems/race.js";
 
 export function render(context, state) {
   context.imageSmoothingEnabled = false;
@@ -29,6 +30,16 @@ export function render(context, state) {
     return;
   }
 
+  if (state.screen === GAME_STATES.RACE) {
+    renderRaceScreen(context, state);
+    return;
+  }
+
+  if (state.screen === GAME_STATES.RACE_RESULT) {
+    renderRaceResultScreen(context, state);
+    return;
+  }
+
   renderTestMap(context, state);
 }
 
@@ -39,7 +50,7 @@ function clear(context) {
 
 function renderTitle(context, state) {
   drawCenteredText(context, "DRAGON BOAT QUEST 2", 120, 44, COLORS.gold);
-  drawCenteredText(context, "Phase 9 Race-Day Setup", 180, 22, COLORS.text);
+  drawCenteredText(context, "Phase 10 Race Prototype", 180, 22, COLORS.text);
 
   const pulse = Math.sin(state.elapsed * 4) * 0.5 + 0.5;
   context.globalAlpha = 0.55 + pulse * 0.45;
@@ -418,6 +429,124 @@ function renderRaceSetupScreen(context, state) {
 
     raceY += 52;
   }
+}
+
+function renderRaceScreen(context, state) {
+  const race = getCurrentRace(state);
+  const distance = getRaceDistance(race);
+  const progressRatio = Math.min(1, state.race.progress / distance);
+  const trackX = 96;
+  const trackY = 250;
+  const trackWidth = CANVAS_WIDTH - 192;
+  const boatX = trackX + progressRatio * (trackWidth - 52);
+
+  context.fillStyle = "#10233d";
+  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  drawCenteredText(context, "Caldecotte Lake", 64, 28, COLORS.gold);
+  drawCenteredText(context, `${race.distance} vs Soaring Dragons`, 104, 20, COLORS.text);
+  drawCenteredText(context, "Tap Space on the beat", 142, 18, COLORS.mutedText);
+
+  context.fillStyle = "rgba(40, 122, 155, 0.95)";
+  context.fillRect(trackX, trackY, trackWidth, 96);
+  context.strokeStyle = COLORS.gold;
+  context.lineWidth = 3;
+  context.strokeRect(trackX + 1.5, trackY + 1.5, trackWidth - 3, 96 - 3);
+
+  context.fillStyle = "rgba(248, 250, 252, 0.28)";
+  for (let x = trackX + 32; x < trackX + trackWidth; x += 42) {
+    context.fillRect(x, trackY + 24, 22, 3);
+    context.fillRect(x + 10, trackY + 58, 22, 3);
+  }
+
+  context.fillStyle = COLORS.dock;
+  context.fillRect(Math.round(boatX), trackY + 34, 52, 28);
+  context.fillStyle = COLORS.player;
+  context.fillRect(Math.round(boatX) + 8, trackY + 28, 36, 8);
+  context.fillStyle = COLORS.gold;
+  context.fillRect(trackX + trackWidth - 12, trackY, 6, 96);
+
+  drawRaceMeter(context, state, trackX, 190, trackWidth);
+
+  context.fillStyle = COLORS.text;
+  context.font = "20px monospace";
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.fillText(`Progress ${Math.floor(state.race.progress)} / ${distance}m`, trackX, 378);
+  context.fillText(`Perfect ${state.race.perfect}   Good ${state.race.good}   Miss ${state.race.misses}`, trackX, 410);
+
+  if (state.race.feedbackTimer > 0) {
+    context.fillStyle = getFeedbackColor(state.race.feedback);
+    context.font = "42px monospace";
+    context.textAlign = "center";
+    context.fillText(state.race.feedback, CANVAS_WIDTH / 2, 456);
+  }
+}
+
+function drawRaceMeter(context, state, x, y, width) {
+  const markerX = x + width / 2;
+  const offset = Math.min(state.race.beatTimer, state.race.beatInterval - state.race.beatTimer);
+  const pulse = 1 - Math.min(1, offset / (state.race.beatInterval / 2));
+
+  context.fillStyle = "rgba(15, 23, 42, 0.86)";
+  context.fillRect(x, y, width, 28);
+  context.strokeStyle = "rgba(248, 250, 252, 0.35)";
+  context.strokeRect(x + 0.5, y + 0.5, width - 1, 27);
+
+  context.fillStyle = COLORS.gold;
+  context.fillRect(markerX - 2, y - 8, 4, 44);
+
+  context.fillStyle = `rgba(244, 63, 94, ${0.35 + pulse * 0.65})`;
+  context.fillRect(markerX - 18 - pulse * 20, y + 4, 14, 20);
+  context.fillRect(markerX + 4 + pulse * 20, y + 4, 14, 20);
+}
+
+function getFeedbackColor(feedback) {
+  if (feedback === "Perfect") {
+    return COLORS.gold;
+  }
+  if (feedback === "Good") {
+    return COLORS.npc;
+  }
+  if (feedback === "Miss") {
+    return COLORS.player;
+  }
+  return COLORS.text;
+}
+
+function renderRaceResultScreen(context, state) {
+  const race = getCurrentRace(state);
+  const won = state.race.result === "win";
+
+  context.fillStyle = "#10233d";
+  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  drawCenteredText(context, won ? "Race Complete" : "Race Lost", 92, 36, won ? COLORS.gold : COLORS.player);
+  drawCenteredText(context, `${race.distance} vs Soaring Dragons`, 142, 22, COLORS.text);
+
+  const boxX = CANVAS_WIDTH / 2 - 260;
+  const boxY = 190;
+  const boxWidth = 520;
+  const boxHeight = 190;
+
+  context.fillStyle = COLORS.panel;
+  context.fillRect(boxX, boxY, boxWidth, boxHeight);
+  context.strokeStyle = COLORS.gold;
+  context.lineWidth = 3;
+  context.strokeRect(boxX + 1.5, boxY + 1.5, boxWidth - 3, boxHeight - 3);
+
+  context.fillStyle = COLORS.text;
+  context.font = "22px monospace";
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.fillText(`Perfect: ${state.race.perfect}`, boxX + 48, boxY + 42);
+  context.fillText(`Good:    ${state.race.good}`, boxX + 48, boxY + 78);
+  context.fillText(`Miss:    ${state.race.misses}`, boxX + 48, boxY + 114);
+
+  context.fillStyle = COLORS.mutedText;
+  context.font = "18px monospace";
+  context.textAlign = "center";
+  context.fillText("Press Enter, Space, or Escape", CANVAS_WIDTH / 2, 420);
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {

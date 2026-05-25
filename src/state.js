@@ -17,6 +17,21 @@ export function createInitialState() {
     raceSetup: {
       raceDayId: "",
     },
+    race: {
+      raceDayId: "",
+      raceId: "",
+      elapsed: 0,
+      progress: 0,
+      beatTimer: 0,
+      beatInterval: 0,
+      feedback: "",
+      feedbackTimer: 0,
+      perfect: 0,
+      good: 0,
+      misses: 0,
+      taps: 0,
+      result: "",
+    },
     ...createMapState("caldecotte-lake"),
   };
 }

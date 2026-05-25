@@ -31,4 +31,6 @@ export const GAME_STATES = {
   TEST_MAP: "testMap",
   CREW: "crew",
   RACE_SETUP: "raceSetup",
+  RACE: "race",
+  RACE_RESULT: "raceResult",
 };

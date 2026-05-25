@@ -2,7 +2,7 @@
 
 Dragon Boat Quest 2 is a browser-first HTML Canvas game about Secklow Hundred Dragon Boat Club travelling through a full dragon boat racing season.
 
-This project is currently in Phase 9: Caldecotte race-day setup.
+This project is currently in Phase 10: first race prototype.
 
 ## Running The Game
 
@@ -55,6 +55,9 @@ Current progress includes:
 - Crew screen opened with `C`
 - Dock race-day gate
 - Caldecotte race-day setup screen
+- Caldecotte 200m race prototype
+- Spacebar rhythm tap judging
+- Basic race result screen
 - Tiled JSON map loading
 - Pixel-art Caldecotte tileset rendering
 - Object-layer spawns, NPCs, interactables, and collision shapes
