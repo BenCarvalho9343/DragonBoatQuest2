@@ -2,17 +2,27 @@
 
 Dragon Boat Quest 2 is a browser-first HTML Canvas game about Secklow Hundred Dragon Boat Club travelling through a full dragon boat racing season.
 
-This project is currently in Phase 5: name entry and opening scene.
+This project is currently in Phase 8.5: Tiled Caldecotte map integration.
 
 ## Running The Game
 
-Open `index.html` in a browser.
+Start a small local server from the project folder:
+
+```sh
+python3 -m http.server 4173
+```
+
+Then open:
+
+```text
+http://127.0.0.1:4173/
+```
 
 No build step is required.
 
 ## Current Phase
 
-Phase 5 includes:
+Current progress includes:
 
 - Canvas setup
 - Basic game loop
@@ -39,6 +49,14 @@ Phase 5 includes:
 - Player name stored in game state
 - `[name]` replacement in dialogue
 - Opening Coach Tim dialogue before player control unlocks
+- Caldecotte Lake map slice
+- Caldecotte NPC placement
+- Crew recruitment for Lesley, Marcus, Dan, and Naomi
+- Crew screen opened with `C`
+- Dock race-day gate
+- Tiled JSON map loading
+- Pixel-art Caldecotte tileset rendering
+- Object-layer spawns, NPCs, interactables, and collision shapes
 
 ## Planned Direction
 

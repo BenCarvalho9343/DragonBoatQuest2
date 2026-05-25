@@ -75,6 +75,11 @@ function drawMap(context, map, camera) {
     return;
   }
 
+  if (map.tiled) {
+    drawTiledMap(context, map, camera);
+    return;
+  }
+
   const startCol = Math.floor(camera.x / TILE_SIZE);
   const endCol = Math.min(map.width, Math.ceil((camera.x + CANVAS_WIDTH) / TILE_SIZE));
   const startRow = Math.floor(camera.y / TILE_SIZE);
@@ -83,6 +88,42 @@ function drawMap(context, map, camera) {
   for (let row = startRow; row < endRow; row += 1) {
     for (let col = startCol; col < endCol; col += 1) {
       drawTile(context, map.tiles[row][col], col * TILE_SIZE - camera.x, row * TILE_SIZE - camera.y);
+    }
+  }
+}
+
+function drawTiledMap(context, map, camera) {
+  const { columns, firstGid, image, layers, scale, tileHeight, tileWidth } = map.tiled;
+  const drawWidth = tileWidth * scale;
+  const drawHeight = tileHeight * scale;
+
+  for (const layer of layers) {
+    for (let index = 0; index < layer.data.length; index += 1) {
+      const gid = layer.data[index];
+
+      if (gid === 0) {
+        continue;
+      }
+
+      const tileIndex = gid - firstGid;
+      const sourceX = (tileIndex % columns) * tileWidth;
+      const sourceY = Math.floor(tileIndex / columns) * tileHeight;
+      const column = index % layer.width;
+      const row = Math.floor(index / layer.width);
+      const destinationX = Math.round(column * drawWidth - camera.x);
+      const destinationY = Math.round(row * drawHeight - camera.y);
+
+      context.drawImage(
+        image,
+        sourceX,
+        sourceY,
+        tileWidth,
+        tileHeight,
+        destinationX,
+        destinationY,
+        drawWidth,
+        drawHeight,
+      );
     }
   }
 }

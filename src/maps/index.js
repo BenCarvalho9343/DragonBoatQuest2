@@ -8,6 +8,10 @@ export const maps = {
   [trainingYard.id]: trainingYard,
 };
 
+export function registerMap(map) {
+  maps[map.id] = map;
+}
+
 export function getMap(mapId) {
   const map = maps[mapId];
 
