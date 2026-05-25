@@ -24,6 +24,7 @@ export function createInitialState() {
       progress: 0,
       beatTimer: 0,
       beatInterval: 0,
+      notes: [],
       feedback: "",
       feedbackTimer: 0,
       perfect: 0,

@@ -3,15 +3,15 @@ import { raceDays } from "../data/raceDays.js";
 import { setFlag } from "./flags.js";
 
 const PERFECT_WINDOW = 0.08;
-const GOOD_WINDOW = 0.17;
-const BASE_SPEED = 9;
-const PERFECT_BOOST = 18;
-const GOOD_BOOST = 10;
-const MISS_PENALTY = 5;
+const GOOD_WINDOW = 0.16;
+const NOTE_LEAD_IN = 1.6;
+const NOTE_COUNT = 32;
+const BASE_SPEED = 3;
 
 export function startRace(state, raceDayId, raceId) {
   const race = getRace(raceDayId, raceId);
   const beatInterval = 60 / race.bpm;
+  const distance = getRaceDistance(race);
 
   state.race = {
     raceDayId,
@@ -20,6 +20,9 @@ export function startRace(state, raceDayId, raceId) {
     progress: 0,
     beatTimer: 0,
     beatInterval,
+    notes: createNotes(beatInterval),
+    perfectBoost: distance / NOTE_COUNT,
+    goodBoost: distance / NOTE_COUNT * 0.68,
     feedback: "Ready",
     feedbackTimer: 0.8,
     perfect: 0,
@@ -32,7 +35,6 @@ export function startRace(state, raceDayId, raceId) {
 }
 
 export function updateRace(state, input, delta) {
-  const race = getCurrentRace(state);
   state.race.elapsed += delta;
   state.race.beatTimer = (state.race.beatTimer + delta) % state.race.beatInterval;
   state.race.progress += BASE_SPEED * delta;
@@ -42,7 +44,9 @@ export function updateRace(state, input, delta) {
     judgeTap(state);
   }
 
-  if (state.race.progress >= getRaceDistance(race)) {
+  markPassedNotesAsMissed(state);
+
+  if (isRaceFinished(state)) {
     finishRace(state);
   }
 }
@@ -56,30 +60,61 @@ export function getRaceDistance(race) {
 }
 
 function judgeTap(state) {
-  const beatOffset = getBeatOffset(state.race);
+  const note = getClosestActiveNote(state.race);
   state.race.taps += 1;
 
-  if (beatOffset <= PERFECT_WINDOW) {
+  if (!note) {
+    state.race.misses += 1;
+    setFeedback(state, "Miss");
+    return;
+  }
+
+  const offset = Math.abs(note.time - state.race.elapsed);
+
+  if (offset <= PERFECT_WINDOW) {
+    note.judged = true;
+    note.result = "perfect";
     state.race.perfect += 1;
-    state.race.progress += PERFECT_BOOST;
+    state.race.progress += state.race.perfectBoost;
     setFeedback(state, "Perfect");
     return;
   }
 
-  if (beatOffset <= GOOD_WINDOW) {
+  if (offset <= GOOD_WINDOW) {
+    note.judged = true;
+    note.result = "good";
     state.race.good += 1;
-    state.race.progress += GOOD_BOOST;
+    state.race.progress += state.race.goodBoost;
     setFeedback(state, "Good");
-    return;
   }
-
-  state.race.misses += 1;
-  state.race.progress = Math.max(0, state.race.progress - MISS_PENALTY);
-  setFeedback(state, "Miss");
 }
 
-function getBeatOffset(raceState) {
-  return Math.min(raceState.beatTimer, raceState.beatInterval - raceState.beatTimer);
+function getClosestActiveNote(raceState) {
+  const candidates = raceState.notes.filter((note) => !note.judged);
+  let closest = null;
+  let closestOffset = Number.POSITIVE_INFINITY;
+
+  for (const note of candidates) {
+    const offset = Math.abs(note.time - raceState.elapsed);
+
+    if (offset < closestOffset) {
+      closest = note;
+      closestOffset = offset;
+    }
+  }
+
+  return closestOffset <= GOOD_WINDOW ? closest : null;
+}
+
+function markPassedNotesAsMissed(state) {
+  for (const note of state.race.notes) {
+    if (!note.judged && state.race.elapsed - note.time > GOOD_WINDOW) {
+      note.judged = true;
+      note.result = "miss";
+      state.race.misses += 1;
+      setFeedback(state, "Miss");
+    }
+  }
 }
 
 function setFeedback(state, feedback) {
@@ -88,16 +123,36 @@ function setFeedback(state, feedback) {
 }
 
 function finishRace(state) {
-  const score = state.race.perfect * 2 + state.race.good - state.race.misses;
-  const won = score >= 8;
+  const distance = getRaceDistance(getCurrentRace(state));
+  const won = state.race.progress >= distance * 0.85;
 
-  state.race.progress = getRaceDistance(getCurrentRace(state));
+  state.race.progress = Math.min(distance, state.race.progress);
   state.race.result = won ? "win" : "loss";
   state.screen = GAME_STATES.RACE_RESULT;
 
   if (won) {
     setFlag(state, "caldecotte_200m_complete");
   }
+}
+
+function createNotes(beatInterval) {
+  return Array.from({ length: NOTE_COUNT }, (_, index) => {
+    return {
+      id: index,
+      time: NOTE_LEAD_IN + index * beatInterval,
+      judged: false,
+      result: "",
+    };
+  });
+}
+
+function isRaceFinished(state) {
+  const race = getCurrentRace(state);
+  const distance = getRaceDistance(race);
+  const allNotesJudged = state.race.notes.every((note) => note.judged);
+  const lastNote = state.race.notes[state.race.notes.length - 1];
+
+  return state.race.progress >= distance || (allNotesJudged && state.race.elapsed > lastNote.time + 0.5);
 }
 
 function getRace(raceDayId, raceId) {

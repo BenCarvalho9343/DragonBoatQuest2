@@ -436,7 +436,7 @@ function renderRaceScreen(context, state) {
   const distance = getRaceDistance(race);
   const progressRatio = Math.min(1, state.race.progress / distance);
   const trackX = 96;
-  const trackY = 250;
+  const trackY = 294;
   const trackWidth = CANVAS_WIDTH - 192;
   const boatX = trackX + progressRatio * (trackWidth - 52);
 
@@ -445,7 +445,9 @@ function renderRaceScreen(context, state) {
 
   drawCenteredText(context, "Caldecotte Lake", 64, 28, COLORS.gold);
   drawCenteredText(context, `${race.distance} vs Soaring Dragons`, 104, 20, COLORS.text);
-  drawCenteredText(context, "Tap Space on the beat", 142, 18, COLORS.mutedText);
+  drawCenteredText(context, "Tap Space when a box reaches the gold bar", 142, 18, COLORS.mutedText);
+
+  drawNoteHighway(context, state, 96, 178, trackWidth);
 
   context.fillStyle = "rgba(40, 122, 155, 0.95)";
   context.fillRect(trackX, trackY, trackWidth, 96);
@@ -466,39 +468,66 @@ function renderRaceScreen(context, state) {
   context.fillStyle = COLORS.gold;
   context.fillRect(trackX + trackWidth - 12, trackY, 6, 96);
 
-  drawRaceMeter(context, state, trackX, 190, trackWidth);
-
   context.fillStyle = COLORS.text;
   context.font = "20px monospace";
   context.textAlign = "left";
   context.textBaseline = "top";
-  context.fillText(`Progress ${Math.floor(state.race.progress)} / ${distance}m`, trackX, 378);
-  context.fillText(`Perfect ${state.race.perfect}   Good ${state.race.good}   Miss ${state.race.misses}`, trackX, 410);
+  context.fillText(`Progress ${Math.floor(state.race.progress)} / ${distance}m`, trackX, 420);
+  context.fillText(`Perfect ${state.race.perfect}   Good ${state.race.good}   Miss ${state.race.misses}`, trackX, 452);
 
   if (state.race.feedbackTimer > 0) {
     context.fillStyle = getFeedbackColor(state.race.feedback);
-    context.font = "42px monospace";
+    context.font = "38px monospace";
     context.textAlign = "center";
-    context.fillText(state.race.feedback, CANVAS_WIDTH / 2, 456);
+    context.fillText(state.race.feedback, CANVAS_WIDTH / 2, 492);
   }
 }
 
-function drawRaceMeter(context, state, x, y, width) {
-  const markerX = x + width / 2;
-  const offset = Math.min(state.race.beatTimer, state.race.beatInterval - state.race.beatTimer);
-  const pulse = 1 - Math.min(1, offset / (state.race.beatInterval / 2));
+function drawNoteHighway(context, state, x, y, width) {
+  const hitX = x + 108;
+  const laneHeight = 58;
+  const travelTime = 2.1;
+  const noteSpeed = (width - 140) / travelTime;
+  const perfectWidth = 18;
+  const goodWidth = 52;
 
   context.fillStyle = "rgba(15, 23, 42, 0.86)";
-  context.fillRect(x, y, width, 28);
+  context.fillRect(x, y, width, laneHeight);
   context.strokeStyle = "rgba(248, 250, 252, 0.35)";
-  context.strokeRect(x + 0.5, y + 0.5, width - 1, 27);
+  context.lineWidth = 2;
+  context.strokeRect(x + 1, y + 1, width - 2, laneHeight - 2);
+
+  context.fillStyle = "rgba(56, 189, 248, 0.18)";
+  context.fillRect(hitX - goodWidth / 2, y + 6, goodWidth, laneHeight - 12);
+  context.fillStyle = "rgba(250, 204, 21, 0.3)";
+  context.fillRect(hitX - perfectWidth / 2, y + 4, perfectWidth, laneHeight - 8);
 
   context.fillStyle = COLORS.gold;
-  context.fillRect(markerX - 2, y - 8, 4, 44);
+  context.fillRect(hitX - 3, y - 10, 6, laneHeight + 20);
 
-  context.fillStyle = `rgba(244, 63, 94, ${0.35 + pulse * 0.65})`;
-  context.fillRect(markerX - 18 - pulse * 20, y + 4, 14, 20);
-  context.fillRect(markerX + 4 + pulse * 20, y + 4, 14, 20);
+  context.fillStyle = COLORS.mutedText;
+  context.font = "14px monospace";
+  context.textAlign = "center";
+  context.textBaseline = "top";
+  context.fillText("HIT", hitX, y + laneHeight + 12);
+
+  for (const note of state.race.notes) {
+    if (note.judged) {
+      continue;
+    }
+
+    const noteX = hitX + (note.time - state.race.elapsed) * noteSpeed;
+
+    if (noteX < x - 32 || noteX > x + width + 32) {
+      continue;
+    }
+
+    context.fillStyle = COLORS.player;
+    context.fillRect(Math.round(noteX) - 13, y + 15, 26, 28);
+    context.strokeStyle = COLORS.text;
+    context.lineWidth = 2;
+    context.strokeRect(Math.round(noteX) - 12, y + 16, 24, 26);
+  }
 }
 
 function getFeedbackColor(feedback) {
