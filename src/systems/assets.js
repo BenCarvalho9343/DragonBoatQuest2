@@ -14,9 +14,21 @@ export function loadImage(src) {
 }
 
 export async function loadGameAssets() {
+  const [playerDown, playerLeft, playerRight, playerUp] = await Promise.all([
+    loadImage("./assets/sprites/character_down.png"),
+    loadImage("./assets/sprites/character_left.png"),
+    loadImage("./assets/sprites/character_right.png"),
+    loadImage("./assets/sprites/character_up.png"),
+  ]);
+
   return {
     images: {
-      characters: await loadImage("./assets/sprites/characters.png"),
+      player: {
+        down: playerDown,
+        left: playerLeft,
+        right: playerRight,
+        up: playerUp,
+      },
     },
   };
 }

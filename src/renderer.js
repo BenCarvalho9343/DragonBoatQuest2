@@ -233,12 +233,9 @@ function drawNpcs(context, state) {
 
 function drawPlayer(context, state) {
   const { player, camera } = state;
-  const sprite = state.assets.images.characters;
+  const sprite = state.assets.images.player?.[player.direction];
   const x = Math.round(player.x - camera.x);
   const y = Math.round(player.y - camera.y);
-
-  context.fillStyle = COLORS.playerShadow;
-  context.fillRect(x + 2, y + player.height - 4, player.width, 6);
 
   if (sprite) {
     drawPlayerSprite(context, state, sprite, x, y);
@@ -256,8 +253,7 @@ function drawPlayer(context, state) {
 
 function drawPlayerSprite(context, state, sprite, x, y) {
   const frameWidth = 32;
-  const frameHeight = 38;
-  const directionRow = getPlayerSpriteRow(state.player.direction);
+  const frameHeight = 48;
   const frameColumn = getPlayerSpriteColumn(state);
   const drawWidth = 32;
   const drawHeight = Math.round(frameHeight * (drawWidth / frameWidth));
@@ -267,7 +263,7 @@ function drawPlayerSprite(context, state, sprite, x, y) {
   context.drawImage(
     sprite,
     frameColumn * frameWidth,
-    directionRow * frameHeight,
+    0,
     frameWidth,
     frameHeight,
     drawX,
@@ -275,19 +271,6 @@ function drawPlayerSprite(context, state, sprite, x, y) {
     drawWidth,
     drawHeight,
   );
-}
-
-function getPlayerSpriteRow(direction) {
-  if (direction === "left") {
-    return 1;
-  }
-  if (direction === "right") {
-    return 2;
-  }
-  if (direction === "up") {
-    return 3;
-  }
-  return 0;
 }
 
 function getPlayerSpriteColumn(state) {
