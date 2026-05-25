@@ -9,11 +9,12 @@ import { updatePlayerMovement } from "./systems/movement.js";
 import { prepareRace, startRace, updateRace } from "./systems/race.js";
 
 export class Game {
-  constructor(canvas, input) {
+  constructor(canvas, input, assets) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.input = input;
     this.state = createInitialState();
+    this.state.assets = assets ?? this.state.assets;
     this.lastTime = 0;
     this.isRunning = false;
   }

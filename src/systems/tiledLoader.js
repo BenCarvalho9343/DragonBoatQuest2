@@ -1,4 +1,5 @@
 import { TILE_SIZE } from "../constants.js";
+import { loadImage } from "./assets.js";
 
 const TILED_TILE_SIZE = 16;
 const TILED_SCALE = TILE_SIZE / TILED_TILE_SIZE;
@@ -182,15 +183,6 @@ function createCollisionShapes(objects) {
 
 function createWalkableTiles(width, height) {
   return Array.from({ length: height }, () => "G".repeat(width));
-}
-
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.addEventListener("load", () => resolve(image), { once: true });
-    image.addEventListener("error", () => reject(new Error(`Could not load image: ${src}`)), { once: true });
-    image.src = src;
-  });
 }
 
 function toKey(value) {

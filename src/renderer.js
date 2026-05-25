@@ -233,11 +233,17 @@ function drawNpcs(context, state) {
 
 function drawPlayer(context, state) {
   const { player, camera } = state;
+  const sprite = state.assets.images.characters;
   const x = Math.round(player.x - camera.x);
   const y = Math.round(player.y - camera.y);
 
   context.fillStyle = COLORS.playerShadow;
   context.fillRect(x + 2, y + player.height - 4, player.width, 6);
+
+  if (sprite) {
+    drawPlayerSprite(context, state, sprite, x, y);
+    return;
+  }
 
   context.fillStyle = COLORS.player;
   context.fillRect(x, y, player.width, player.height);
@@ -246,6 +252,50 @@ function drawPlayer(context, state) {
   const eyeY = player.direction === "up" ? y + 7 : y + 10;
   context.fillRect(x + 5, eyeY, 3, 3);
   context.fillRect(x + player.width - 8, eyeY, 3, 3);
+}
+
+function drawPlayerSprite(context, state, sprite, x, y) {
+  const frameWidth = 32;
+  const frameHeight = 38;
+  const directionRow = getPlayerSpriteRow(state.player.direction);
+  const frameColumn = getPlayerSpriteColumn(state);
+  const drawWidth = 32;
+  const drawHeight = Math.round(frameHeight * (drawWidth / frameWidth));
+  const drawX = Math.round(x + state.player.width / 2 - drawWidth / 2);
+  const drawY = Math.round(y + state.player.height - drawHeight + 2);
+
+  context.drawImage(
+    sprite,
+    frameColumn * frameWidth,
+    directionRow * frameHeight,
+    frameWidth,
+    frameHeight,
+    drawX,
+    drawY,
+    drawWidth,
+    drawHeight,
+  );
+}
+
+function getPlayerSpriteRow(direction) {
+  if (direction === "left") {
+    return 1;
+  }
+  if (direction === "right") {
+    return 2;
+  }
+  if (direction === "up") {
+    return 3;
+  }
+  return 0;
+}
+
+function getPlayerSpriteColumn(state) {
+  if (!state.player.moving) {
+    return Math.floor(state.elapsed * 2) % 2;
+  }
+
+  return 2 + (Math.floor(state.elapsed * 8) % 2);
 }
 
 function drawTransitionMessage(context, state) {

@@ -1,3 +1,6 @@
 *.tiled-session
+.DS_Store
+**/.DS_Store
 assets/tiles/.pxo
 assets/tiles/untitled.tiled-project
+assets/tiles/Screenshot*.png

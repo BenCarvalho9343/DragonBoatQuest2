@@ -1,4 +1,5 @@
 import { GAME_STATES } from "./constants.js";
+import { createAssetState } from "./systems/assets.js";
 import { createDialogueState } from "./systems/dialogue.js";
 import { createProgressState } from "./systems/flags.js";
 import { createMapState } from "./systems/mapManager.js";
@@ -12,6 +13,7 @@ export function createInitialState() {
       value: "",
       maxLength: 12,
     },
+    assets: createAssetState(),
     progress: createProgressState(),
     dialogue: createDialogueState(),
     raceSetup: {
