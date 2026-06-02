@@ -591,17 +591,14 @@ function drawRaceWater(context, state, x, y, width, height) {
 }
 
 function drawBoatWake(context, state, x, y, intensity) {
-  const wakeX = Math.round(x - 18);
-  const wakeY = y + 38;
+  const wakeX = Math.round(x + 4);
+  const wakeY = y + 49;
   const pulse = 1 + Math.sin(state.race.elapsed * 14) * 0.18;
 
-  context.strokeStyle = `rgba(226, 246, 255, ${0.28 * intensity})`;
-  context.lineWidth = Math.max(1, 2 * intensity * pulse);
+  context.fillStyle = `rgba(226, 246, 255, ${0.22 * intensity})`;
   for (let index = 0; index < 3; index += 1) {
-    context.beginPath();
-    context.moveTo(wakeX - index * 18, wakeY + index * 5);
-    context.lineTo(wakeX - 42 - index * 20, wakeY + 12 + index * 7);
-    context.stroke();
+    const rippleWidth = Math.round((24 - index * 5) * pulse);
+    context.fillRect(wakeX - index * 20, wakeY + index * 5, rippleWidth, 2);
   }
 }
 
