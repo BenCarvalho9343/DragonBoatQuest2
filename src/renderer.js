@@ -275,7 +275,7 @@ function drawPlayerSprite(context, state, sprite, x, y) {
 
 function getPlayerSpriteColumn(state) {
   if (!state.player.moving) {
-    return Math.floor(state.elapsed * 2) % 2;
+    return 0;
   }
 
   return 2 + (Math.floor(state.elapsed * 8) % 2);

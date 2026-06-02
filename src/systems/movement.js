@@ -41,34 +41,23 @@ function getMovementVector(input) {
   const up = input.isDown("ArrowUp", "KeyW");
   const down = input.isDown("ArrowDown", "KeyS");
 
-  let x = 0;
-  let y = 0;
-  let direction = "down";
-
-  if (left) {
-    x -= 1;
-    direction = "left";
-  }
-  if (right) {
-    x += 1;
-    direction = "right";
-  }
-  if (up) {
-    y -= 1;
-    direction = "up";
-  }
-  if (down) {
-    y += 1;
-    direction = "down";
+  if (left && !right) {
+    return { x: -1, y: 0, direction: "left" };
   }
 
-  if (x !== 0 && y !== 0) {
-    const diagonal = Math.SQRT1_2;
-    x *= diagonal;
-    y *= diagonal;
+  if (right && !left) {
+    return { x: 1, y: 0, direction: "right" };
   }
 
-  return { x, y, direction };
+  if (up && !down) {
+    return { x: 0, y: -1, direction: "up" };
+  }
+
+  if (down && !up) {
+    return { x: 0, y: 1, direction: "down" };
+  }
+
+  return { x: 0, y: 0, direction: "down" };
 }
 
 function collidesWithMap(map, x, y, width, height) {
