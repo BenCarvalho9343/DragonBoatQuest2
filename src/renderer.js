@@ -482,26 +482,23 @@ function renderRaceScreen(context, state) {
   const raceEndX = CANVAS_WIDTH - 86;
   const boatX = raceStartX + progressRatio * (raceEndX - raceStartX - 58);
   const rivalX = raceStartX + rivalRatio * (raceEndX - raceStartX - 58);
+  const practiceX = raceStartX + 28 + Math.sin(state.race.elapsed * 1.6) * 8;
 
   context.fillStyle = "#10233d";
   context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  context.fillStyle = "rgba(40, 122, 155, 0.95)";
-  context.fillRect(waterX, waterY, waterWidth, waterHeight);
-
-  context.fillStyle = "rgba(248, 250, 252, 0.28)";
-  for (let x = 28; x < CANVAS_WIDTH; x += 58) {
-    context.fillRect(x, 42, 22, 3);
-    context.fillRect(x + 18, 172, 22, 3);
-    context.fillRect(x + 8, 320, 22, 3);
-  }
+  drawRaceWater(context, state, waterX, waterY, waterWidth, waterHeight);
 
   drawLaneLine(context, 112);
   drawLaneLine(context, 218);
   drawLaneLine(context, 324);
+  drawBoatWake(context, state, rivalX, 104, 0.8);
+  drawBoatWake(context, state, boatX, 210, 1 + state.race.hitPulse * 0.55);
+  drawBoatWake(context, state, practiceX, 316, 0.55);
   drawRaceBoat(context, state, rivalX, 104, COLORS.npc, "SOA");
   drawRaceBoat(context, state, boatX, 210, COLORS.player, "SH");
-  drawRaceBoat(context, state, raceStartX + 28 + Math.sin(state.race.elapsed * 1.6) * 8, 316, COLORS.npcAlt, "LANE");
+  drawRaceBoat(context, state, practiceX, 316, COLORS.npcAlt, "LANE");
+  drawRaceEffects(context, state, boatX, 210);
 
   context.fillStyle = COLORS.gold;
   context.fillRect(raceEndX, 54, 6, 320);
@@ -526,6 +523,7 @@ function renderRaceScreen(context, state) {
   }
 
   drawNoteHighway(context, state, 64, 438, CANVAS_WIDTH - 128);
+  drawRaceCountdown(context, state);
 }
 
 function renderRaceReadyScreen(context, state) {
@@ -574,6 +572,39 @@ function drawLaneLine(context, y) {
   context.stroke();
 }
 
+function drawRaceWater(context, state, x, y, width, height) {
+  context.fillStyle = "rgba(40, 122, 155, 0.95)";
+  context.fillRect(x, y, width, height);
+
+  context.fillStyle = "rgba(248, 250, 252, 0.2)";
+  const drift = (state.race.elapsed * 42) % 58;
+  for (let waveX = -58 + drift; waveX < CANVAS_WIDTH; waveX += 58) {
+    context.fillRect(Math.round(waveX), 42, 22, 3);
+    context.fillRect(Math.round(waveX + 18), 172, 22, 3);
+    context.fillRect(Math.round(waveX + 8), 320, 22, 3);
+  }
+
+  context.fillStyle = "rgba(8, 47, 73, 0.22)";
+  for (let laneY = 84; laneY < height; laneY += 106) {
+    context.fillRect(x, laneY, width, 34);
+  }
+}
+
+function drawBoatWake(context, state, x, y, intensity) {
+  const wakeX = Math.round(x - 18);
+  const wakeY = y + 38;
+  const pulse = 1 + Math.sin(state.race.elapsed * 14) * 0.18;
+
+  context.strokeStyle = `rgba(226, 246, 255, ${0.28 * intensity})`;
+  context.lineWidth = Math.max(1, 2 * intensity * pulse);
+  for (let index = 0; index < 3; index += 1) {
+    context.beginPath();
+    context.moveTo(wakeX - index * 18, wakeY + index * 5);
+    context.lineTo(wakeX - 42 - index * 20, wakeY + 12 + index * 7);
+    context.stroke();
+  }
+}
+
 function drawRaceBoat(context, state, x, y, color, label) {
   const roundedX = Math.round(x);
   const sprite = state.assets.images.boat;
@@ -583,7 +614,7 @@ function drawRaceBoat(context, state, x, y, color, label) {
     const sourceHeight = 320;
     const frameCount = Math.max(1, Math.floor(sprite.width / sourceWidth));
     const frame = Math.floor(state.race.elapsed * 8) % frameCount;
-    const drawWidth = 112;
+    const drawWidth = 112 + Math.round(state.race.hitPulse * 4);
     const drawHeight = Math.round(sourceHeight * (drawWidth / sourceWidth));
 
     context.drawImage(
@@ -611,6 +642,33 @@ function drawRaceBoat(context, state, x, y, color, label) {
   context.textAlign = "center";
   context.textBaseline = "top";
   context.fillText(label, roundedX + 32, y - 2);
+}
+
+function drawRaceEffects(context, state, boatX, boatY) {
+  for (const effect of state.race.effects) {
+    const progress = effect.age / effect.duration;
+    const alpha = 1 - progress;
+    const x = Math.round(boatX + 118 + progress * 20);
+    const y = Math.round(boatY + 24 - progress * 18);
+
+    if (effect.type === "miss") {
+      context.strokeStyle = `rgba(244, 63, 94, ${alpha})`;
+      context.lineWidth = 4;
+      context.beginPath();
+      context.moveTo(x - 10, y - 10);
+      context.lineTo(x + 10, y + 10);
+      context.moveTo(x + 10, y - 10);
+      context.lineTo(x - 10, y + 10);
+      context.stroke();
+      continue;
+    }
+
+    context.strokeStyle = effect.type === "perfect" ? `rgba(250, 204, 21, ${alpha})` : `rgba(56, 189, 248, ${alpha})`;
+    context.lineWidth = effect.type === "perfect" ? 4 : 3;
+    context.beginPath();
+    context.arc(x, y, 10 + progress * 22, 0, Math.PI * 2);
+    context.stroke();
+  }
 }
 
 function drawNoteHighway(context, state, x, y, width) {
@@ -641,6 +699,11 @@ function drawNoteHighway(context, state, x, y, width) {
   context.textBaseline = "top";
   context.fillText("HIT", hitX, y + laneHeight - 18);
 
+  const pulse = 1 + state.race.hitPulse * 0.55;
+  context.strokeStyle = `rgba(250, 204, 21, ${0.45 + state.race.hitPulse * 0.35})`;
+  context.lineWidth = 2;
+  context.strokeRect(hitX - 15 * pulse, y + 7, 30 * pulse, laneHeight - 14);
+
   for (const note of state.race.notes) {
     if (note.judged) {
       continue;
@@ -660,6 +723,27 @@ function drawNoteHighway(context, state, x, y, width) {
   }
 }
 
+function drawRaceCountdown(context, state) {
+  if (state.race.countdown <= 0) {
+    return;
+  }
+
+  const value = Math.ceil(state.race.countdown);
+  const label = value > 0 ? String(value) : "Go";
+
+  context.fillStyle = "rgba(15, 23, 42, 0.34)";
+  context.fillRect(0, 0, CANVAS_WIDTH, 418);
+  context.fillStyle = COLORS.gold;
+  context.font = "74px monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(label, CANVAS_WIDTH / 2, 202);
+
+  context.fillStyle = COLORS.text;
+  context.font = "18px monospace";
+  context.fillText("Get ready", CANVAS_WIDTH / 2, 258);
+}
+
 function getFeedbackColor(feedback) {
   if (feedback === "Perfect") {
     return COLORS.gold;
@@ -676,36 +760,50 @@ function getFeedbackColor(feedback) {
 function renderRaceResultScreen(context, state) {
   const race = getCurrentRace(state);
   const won = state.race.result === "win";
+  const totalJudged = Math.max(1, state.race.perfect + state.race.good + state.race.misses);
+  const accuracy = Math.round(((state.race.perfect + state.race.good) / totalJudged) * 100);
 
   context.fillStyle = "#10233d";
   context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  drawCenteredText(context, won ? "Race Complete" : "Race Lost", 92, 36, won ? COLORS.gold : COLORS.player);
-  drawCenteredText(context, `${race.distance} vs Soaring Dragons`, 142, 22, COLORS.text);
+  context.fillStyle = won ? "rgba(250, 204, 21, 0.1)" : "rgba(244, 63, 94, 0.1)";
+  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  const boxX = CANVAS_WIDTH / 2 - 260;
-  const boxY = 190;
-  const boxWidth = 520;
-  const boxHeight = 190;
+  drawCenteredText(context, won ? "Race Won" : "Race Lost", 78, 42, won ? COLORS.gold : COLORS.player);
+  drawCenteredText(context, `${race.distance} vs Soaring Dragons`, 132, 22, COLORS.text);
+
+  const boxX = CANVAS_WIDTH / 2 - 310;
+  const boxY = 176;
+  const boxWidth = 620;
+  const boxHeight = 230;
 
   context.fillStyle = COLORS.panel;
   context.fillRect(boxX, boxY, boxWidth, boxHeight);
-  context.strokeStyle = COLORS.gold;
+  context.strokeStyle = won ? COLORS.gold : COLORS.player;
   context.lineWidth = 3;
   context.strokeRect(boxX + 1.5, boxY + 1.5, boxWidth - 3, boxHeight - 3);
+
+  context.fillStyle = won ? COLORS.gold : COLORS.player;
+  context.font = "24px monospace";
+  context.textAlign = "center";
+  context.textBaseline = "top";
+  context.fillText(won ? "Secklow crossed the line cleanly." : "The rhythm broke before the line.", CANVAS_WIDTH / 2, boxY + 28);
 
   context.fillStyle = COLORS.text;
   context.font = "22px monospace";
   context.textAlign = "left";
-  context.textBaseline = "top";
-  context.fillText(`Perfect: ${state.race.perfect}`, boxX + 48, boxY + 42);
-  context.fillText(`Good:    ${state.race.good}`, boxX + 48, boxY + 78);
-  context.fillText(`Miss:    ${state.race.misses}`, boxX + 48, boxY + 114);
+  context.fillText(`Perfect hits   ${state.race.perfect}`, boxX + 70, boxY + 88);
+  context.fillText(`Good hits      ${state.race.good}`, boxX + 70, boxY + 124);
+  context.fillText(`Misses         ${state.race.misses}`, boxX + 70, boxY + 160);
+
+  context.textAlign = "right";
+  context.fillText(`Accuracy ${accuracy}%`, boxX + boxWidth - 70, boxY + 124);
+  context.fillText(`${Math.floor(state.race.progress)}m`, boxX + boxWidth - 70, boxY + 160);
 
   context.fillStyle = COLORS.mutedText;
   context.font = "18px monospace";
   context.textAlign = "center";
-  context.fillText("Press Enter, Space, or Escape", CANVAS_WIDTH / 2, 420);
+  context.fillText(won ? "Press Enter, Space, or Escape to continue" : "Press Enter, Space, or Escape to regroup", CANVAS_WIDTH / 2, 440);
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {

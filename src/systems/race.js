@@ -11,6 +11,7 @@ const RIVAL_SPEED = 10.4;
 const PERFECT_SPEED_BOOST = 2.6;
 const GOOD_SPEED_BOOST = 1.4;
 const SPEED_BOOST_DECAY = 3.2;
+const COUNTDOWN_DURATION = 3;
 
 export function prepareRace(state, raceDayId, raceId) {
   const race = getRace(raceDayId, raceId);
@@ -29,6 +30,9 @@ export function prepareRace(state, raceDayId, raceId) {
     notes: createNotes(beatInterval),
     feedback: "Ready",
     feedbackTimer: 0.8,
+    countdown: 0,
+    hitPulse: 0,
+    effects: [],
     perfect: 0,
     good: 0,
     misses: 0,
@@ -44,14 +48,29 @@ export function startRace(state) {
   state.race.rivalProgress = 0;
   state.race.speedBoost = 0;
   state.race.beatTimer = 0;
-  state.race.feedback = "Go";
-  state.race.feedbackTimer = 0.8;
+  state.race.countdown = COUNTDOWN_DURATION;
+  state.race.hitPulse = 0;
+  state.race.effects = [];
+  state.race.feedback = "Ready";
+  state.race.feedbackTimer = 0;
   state.screen = GAME_STATES.RACE;
 }
 
 export function updateRace(state, input, delta) {
   const race = getCurrentRace(state);
   const distance = getRaceDistance(race);
+
+  updateRaceEffects(state, delta);
+
+  if (state.race.countdown > 0) {
+    state.race.countdown = Math.max(0, state.race.countdown - delta);
+
+    if (state.race.countdown === 0) {
+      setFeedback(state, "Go", 0.75);
+    }
+
+    return;
+  }
 
   state.race.elapsed += delta;
   state.race.beatTimer = (state.race.beatTimer + delta) % state.race.beatInterval;
@@ -85,6 +104,7 @@ function judgeTap(state) {
 
   if (!note) {
     state.race.misses += 1;
+    addRaceEffect(state, "miss");
     setFeedback(state, "Miss");
     return;
   }
@@ -96,6 +116,8 @@ function judgeTap(state) {
     note.result = "perfect";
     state.race.perfect += 1;
     state.race.speedBoost += PERFECT_SPEED_BOOST;
+    state.race.hitPulse = 1;
+    addRaceEffect(state, "perfect");
     setFeedback(state, "Perfect");
     return;
   }
@@ -105,6 +127,8 @@ function judgeTap(state) {
     note.result = "good";
     state.race.good += 1;
     state.race.speedBoost += GOOD_SPEED_BOOST;
+    state.race.hitPulse = 0.65;
+    addRaceEffect(state, "good");
     setFeedback(state, "Good");
   }
 }
@@ -132,14 +156,35 @@ function markPassedNotesAsMissed(state) {
       note.judged = true;
       note.result = "miss";
       state.race.misses += 1;
+      addRaceEffect(state, "miss");
       setFeedback(state, "Miss");
     }
   }
 }
 
-function setFeedback(state, feedback) {
+function setFeedback(state, feedback, duration = 0.55) {
   state.race.feedback = feedback;
-  state.race.feedbackTimer = 0.55;
+  state.race.feedbackTimer = duration;
+}
+
+function addRaceEffect(state, type) {
+  state.race.effects.push({
+    id: state.race.effects.length + state.race.elapsed,
+    type,
+    age: 0,
+    duration: type === "miss" ? 0.48 : 0.62,
+  });
+}
+
+function updateRaceEffects(state, delta) {
+  state.race.hitPulse = Math.max(0, state.race.hitPulse - delta * 2.8);
+
+  state.race.effects = state.race.effects
+    .map((effect) => ({
+      ...effect,
+      age: effect.age + delta,
+    }))
+    .filter((effect) => effect.age < effect.duration);
 }
 
 function finishRace(state) {
