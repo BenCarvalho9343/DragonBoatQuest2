@@ -581,10 +581,22 @@ function drawRaceBoat(context, state, x, y, color, label) {
   if (sprite) {
     const sourceWidth = 640;
     const sourceHeight = 320;
+    const frameCount = Math.max(1, Math.floor(sprite.width / sourceWidth));
+    const frame = Math.floor(state.race.elapsed * 8) % frameCount;
     const drawWidth = 112;
     const drawHeight = Math.round(sourceHeight * (drawWidth / sourceWidth));
 
-    context.drawImage(sprite, 0, 0, sourceWidth, sourceHeight, roundedX, y + 2, drawWidth, drawHeight);
+    context.drawImage(
+      sprite,
+      frame * sourceWidth,
+      0,
+      sourceWidth,
+      sourceHeight,
+      roundedX,
+      y + 2,
+      drawWidth,
+      drawHeight,
+    );
     return;
   }
 
