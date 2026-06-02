@@ -278,7 +278,7 @@ function getPlayerSpriteColumn(state) {
     return 0;
   }
 
-  return 2 + (Math.floor(state.elapsed * 8) % 2);
+  return Math.floor(state.elapsed * 8) % 3;
 }
 
 function drawTransitionMessage(context, state) {
