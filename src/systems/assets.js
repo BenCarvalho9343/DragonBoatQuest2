@@ -14,15 +14,17 @@ export function loadImage(src) {
 }
 
 export async function loadGameAssets() {
-  const [playerDown, playerLeft, playerRight, playerUp] = await Promise.all([
+  const [playerDown, playerLeft, playerRight, playerUp, boat] = await Promise.all([
     loadImage("./assets/sprites/character_down.png"),
     loadImage("./assets/sprites/character_left.png"),
     loadImage("./assets/sprites/character_right.png"),
     loadImage("./assets/sprites/character_up.png"),
+    loadImage("./assets/sprites/boat.png"),
   ]);
 
   return {
     images: {
+      boat,
       player: {
         down: playerDown,
         left: playerLeft,

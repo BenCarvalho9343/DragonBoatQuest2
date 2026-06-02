@@ -499,9 +499,9 @@ function renderRaceScreen(context, state) {
   drawLaneLine(context, 112);
   drawLaneLine(context, 218);
   drawLaneLine(context, 324);
-  drawRaceBoat(context, rivalX, 104, COLORS.npc, "SOA");
-  drawRaceBoat(context, boatX, 210, COLORS.player, "SH");
-  drawRaceBoat(context, raceStartX + 28 + Math.sin(state.race.elapsed * 1.6) * 8, 316, COLORS.npcAlt, "LANE");
+  drawRaceBoat(context, state, rivalX, 104, COLORS.npc, "SOA");
+  drawRaceBoat(context, state, boatX, 210, COLORS.player, "SH");
+  drawRaceBoat(context, state, raceStartX + 28 + Math.sin(state.race.elapsed * 1.6) * 8, 316, COLORS.npcAlt, "LANE");
 
   context.fillStyle = COLORS.gold;
   context.fillRect(raceEndX, 54, 6, 320);
@@ -574,8 +574,19 @@ function drawLaneLine(context, y) {
   context.stroke();
 }
 
-function drawRaceBoat(context, x, y, color, label) {
+function drawRaceBoat(context, state, x, y, color, label) {
   const roundedX = Math.round(x);
+  const sprite = state.assets.images.boat;
+
+  if (sprite) {
+    const sourceWidth = 640;
+    const sourceHeight = 320;
+    const drawWidth = 112;
+    const drawHeight = Math.round(sourceHeight * (drawWidth / sourceWidth));
+
+    context.drawImage(sprite, 0, 0, sourceWidth, sourceHeight, roundedX, y + 2, drawWidth, drawHeight);
+    return;
+  }
 
   context.fillStyle = "rgba(15, 23, 42, 0.28)";
   context.fillRect(roundedX + 4, y + 38, 58, 7);
