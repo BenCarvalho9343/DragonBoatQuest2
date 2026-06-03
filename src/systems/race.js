@@ -6,17 +6,27 @@ const PERFECT_WINDOW = 0.08;
 const GOOD_WINDOW = 0.16;
 const NOTE_LEAD_IN = 1.6;
 const NOTE_COUNT = 32;
-const BASE_SPEED = 7.8;
-const RIVAL_SPEED = 10.4;
-const PERFECT_SPEED_BOOST = 2.6;
-const GOOD_SPEED_BOOST = 1.4;
-const SPEED_BOOST_DECAY = 3.2;
 const COUNTDOWN_DURATION = 3;
+
+export function startRaceDay(state, raceDayId) {
+  const raceDay = getRaceDay(raceDayId);
+
+  state.raceDay = {
+    raceDayId,
+    active: true,
+    completedRaceIds: [],
+    message: "",
+  };
+
+  prepareRace(state, raceDayId, raceDay.races[0].id);
+}
 
 export function prepareRace(state, raceDayId, raceId) {
   const race = getRace(raceDayId, raceId);
   const beatInterval = 60 / race.bpm;
   const distance = getRaceDistance(race);
+  const plannedDuration = getPlannedRaceDuration(beatInterval);
+  const racePace = distance / plannedDuration;
 
   state.race = {
     raceDayId,
@@ -25,6 +35,11 @@ export function prepareRace(state, raceDayId, raceId) {
     progress: 0,
     rivalProgress: 0,
     speedBoost: 0,
+    baseSpeed: racePace * 0.68,
+    rivalSpeed: racePace * 0.78,
+    perfectSpeedBoost: racePace * 0.18,
+    goodSpeedBoost: racePace * 0.1,
+    speedBoostDecay: racePace * 0.45,
     beatTimer: 0,
     beatInterval,
     notes: createNotes(beatInterval),
@@ -74,9 +89,9 @@ export function updateRace(state, input, delta) {
 
   state.race.elapsed += delta;
   state.race.beatTimer = (state.race.beatTimer + delta) % state.race.beatInterval;
-  state.race.progress = Math.min(distance, state.race.progress + (BASE_SPEED + state.race.speedBoost) * delta);
-  state.race.rivalProgress = Math.min(distance, state.race.rivalProgress + RIVAL_SPEED * delta);
-  state.race.speedBoost = Math.max(0, state.race.speedBoost - SPEED_BOOST_DECAY * delta);
+  state.race.progress = Math.min(distance, state.race.progress + (state.race.baseSpeed + state.race.speedBoost) * delta);
+  state.race.rivalProgress = Math.min(distance, state.race.rivalProgress + state.race.rivalSpeed * delta);
+  state.race.speedBoost = Math.max(0, state.race.speedBoost - state.race.speedBoostDecay * delta);
   state.race.feedbackTimer = Math.max(0, state.race.feedbackTimer - delta);
 
   if (input.wasPressed("Space")) {
@@ -115,7 +130,7 @@ function judgeTap(state) {
     note.judged = true;
     note.result = "perfect";
     state.race.perfect += 1;
-    state.race.speedBoost += PERFECT_SPEED_BOOST;
+    state.race.speedBoost += state.race.perfectSpeedBoost;
     state.race.hitPulse = 1;
     addRaceEffect(state, "perfect");
     setFeedback(state, "Perfect");
@@ -126,7 +141,7 @@ function judgeTap(state) {
     note.judged = true;
     note.result = "good";
     state.race.good += 1;
-    state.race.speedBoost += GOOD_SPEED_BOOST;
+    state.race.speedBoost += state.race.goodSpeedBoost;
     state.race.hitPulse = 0.65;
     addRaceEffect(state, "good");
     setFeedback(state, "Good");
@@ -194,10 +209,61 @@ function finishRace(state) {
   state.race.progress = Math.min(distance, state.race.progress);
   state.race.result = won ? "win" : "loss";
   state.screen = GAME_STATES.RACE_RESULT;
+}
 
-  if (won) {
-    setFlag(state, "caldecotte_200m_complete");
+export function resolveRaceResult(state) {
+  if (state.race.result !== "win") {
+    resetRaceDay(state);
+    return {
+      outcome: "loss",
+      lines: [
+        "Not today. Walk it off, talk to the crew, and come back when you're ready.",
+        "Soaring Dragons aren't going anywhere.",
+      ],
+    };
   }
+
+  const raceDay = getRaceDay(state.race.raceDayId);
+  const currentRace = getCurrentRace(state);
+  const completedRaceIds = new Set(state.raceDay.completedRaceIds);
+  completedRaceIds.add(currentRace.id);
+  state.raceDay.completedRaceIds = [...completedRaceIds];
+  setFlag(state, `${currentRace.id}_complete`);
+  setRaceCompletionFlag(state, currentRace.id);
+
+  const nextRace = raceDay.races.find((race) => !completedRaceIds.has(race.id));
+
+  if (nextRace) {
+    state.raceDay.message = getBetweenRaceMessage(currentRace.id);
+    prepareRace(state, raceDay.id, nextRace.id);
+    return {
+      outcome: "next",
+      nextRaceId: nextRace.id,
+    };
+  }
+
+  state.raceDay.active = false;
+  state.raceDay.message = "";
+  setFlag(state, `${raceDay.id}_complete`);
+  setFlag(state, "caldecotte_complete");
+
+  return {
+    outcome: "complete",
+    lines: [
+      "Three for three. Soaring Dragons won't forget that in a hurry.",
+      "Right. Next stop is the River Soar in Loughborough. Their home water.",
+      "It'll be a different race on an open river. We'll need more of the crew.",
+    ],
+  };
+}
+
+function resetRaceDay(state) {
+  state.raceDay = {
+    raceDayId: "",
+    active: false,
+    completedRaceIds: [],
+    message: "",
+  };
 }
 
 function createNotes(beatInterval) {
@@ -211,6 +277,10 @@ function createNotes(beatInterval) {
   });
 }
 
+function getPlannedRaceDuration(beatInterval) {
+  return NOTE_LEAD_IN + (NOTE_COUNT - 1) * beatInterval + 1.4;
+}
+
 function isRaceFinished(state) {
   const race = getCurrentRace(state);
   const distance = getRaceDistance(race);
@@ -221,7 +291,7 @@ function isRaceFinished(state) {
 }
 
 function getRace(raceDayId, raceId) {
-  const raceDay = raceDays[raceDayId];
+  const raceDay = getRaceDay(raceDayId);
   const race = raceDay?.races.find((candidate) => candidate.id === raceId);
 
   if (!race) {
@@ -229,4 +299,36 @@ function getRace(raceDayId, raceId) {
   }
 
   return race;
+}
+
+function getRaceDay(raceDayId) {
+  const raceDay = raceDays[raceDayId];
+
+  if (!raceDay) {
+    throw new Error(`Unknown race day: ${raceDayId}`);
+  }
+
+  return raceDay;
+}
+
+function getBetweenRaceMessage(raceId) {
+  if (raceId === "caldecotte-200m") {
+    return "Good start. 200m down, two to go. Don't get cocky.";
+  }
+
+  if (raceId === "caldecotte-500m") {
+    return "Two down. The 2000m is where races are actually won and lost. Watch the bend markers. Don't rush them.";
+  }
+
+  return "";
+}
+
+function setRaceCompletionFlag(state, raceId) {
+  if (raceId === "caldecotte-200m") {
+    setFlag(state, "caldecotte_200m_complete");
+  } else if (raceId === "caldecotte-500m") {
+    setFlag(state, "caldecotte_500m_complete");
+  } else if (raceId === "caldecotte-2000m") {
+    setFlag(state, "caldecotte_2000m_complete");
+  }
 }

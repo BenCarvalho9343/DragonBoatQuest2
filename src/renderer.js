@@ -528,6 +528,7 @@ function renderRaceScreen(context, state) {
 
 function renderRaceReadyScreen(context, state) {
   const race = getCurrentRace(state);
+  const message = state.raceDay.message;
   const boxX = 124;
   const boxY = 80;
   const boxWidth = CANVAS_WIDTH - 248;
@@ -553,9 +554,15 @@ function renderRaceReadyScreen(context, state) {
 
   context.fillStyle = COLORS.text;
   context.font = "22px monospace";
-  context.fillText("Boxes will move toward the gold hit bar.", CANVAS_WIDTH / 2, boxY + 104);
-  context.fillText("Tap Space as each box crosses it.", CANVAS_WIDTH / 2, boxY + 142);
-  context.fillText("Perfect and Good hits move the boat forward.", CANVAS_WIDTH / 2, boxY + 180);
+  if (message) {
+    context.textAlign = "left";
+    wrapText(context, message, boxX + 60, boxY + 100, boxWidth - 120, 30);
+    context.textAlign = "center";
+  } else {
+    context.fillText("Boxes will move toward the gold hit bar.", CANVAS_WIDTH / 2, boxY + 104);
+    context.fillText("Tap Space as each box crosses it.", CANVAS_WIDTH / 2, boxY + 142);
+    context.fillText("Perfect and Good hits move the boat forward.", CANVAS_WIDTH / 2, boxY + 180);
+  }
 
   context.fillStyle = COLORS.mutedText;
   context.font = "18px monospace";
@@ -757,6 +764,7 @@ function getFeedbackColor(feedback) {
 function renderRaceResultScreen(context, state) {
   const race = getCurrentRace(state);
   const won = state.race.result === "win";
+  const isFinalCaldecotteRace = state.race.raceId === "caldecotte-2000m";
   const totalJudged = Math.max(1, state.race.perfect + state.race.good + state.race.misses);
   const accuracy = Math.round(((state.race.perfect + state.race.good) / totalJudged) * 100);
 
@@ -784,7 +792,7 @@ function renderRaceResultScreen(context, state) {
   context.font = "24px monospace";
   context.textAlign = "center";
   context.textBaseline = "top";
-  context.fillText(won ? "Secklow crossed the line cleanly." : "The rhythm broke before the line.", CANVAS_WIDTH / 2, boxY + 28);
+  context.fillText(getRaceResultSummary(won, isFinalCaldecotteRace), CANVAS_WIDTH / 2, boxY + 28);
 
   context.fillStyle = COLORS.text;
   context.font = "22px monospace";
@@ -800,7 +808,31 @@ function renderRaceResultScreen(context, state) {
   context.fillStyle = COLORS.mutedText;
   context.font = "18px monospace";
   context.textAlign = "center";
-  context.fillText(won ? "Press Enter, Space, or Escape to continue" : "Press Enter, Space, or Escape to regroup", CANVAS_WIDTH / 2, 440);
+  context.fillText(getRaceResultPrompt(won, isFinalCaldecotteRace), CANVAS_WIDTH / 2, 440);
+}
+
+function getRaceResultSummary(won, isFinalRace) {
+  if (!won) {
+    return "The rhythm broke before the line.";
+  }
+
+  if (isFinalRace) {
+    return "Caldecotte race day is complete.";
+  }
+
+  return "Secklow crossed the line cleanly.";
+}
+
+function getRaceResultPrompt(won, isFinalRace) {
+  if (!won) {
+    return "Press Enter, Space, or Escape to regroup";
+  }
+
+  if (isFinalRace) {
+    return "Press Enter, Space, or Escape for the debrief";
+  }
+
+  return "Press Enter, Space, or Escape for the next race";
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {

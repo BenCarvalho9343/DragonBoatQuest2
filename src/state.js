@@ -19,6 +19,12 @@ export function createInitialState() {
     raceSetup: {
       raceDayId: "",
     },
+    raceDay: {
+      raceDayId: "",
+      active: false,
+      completedRaceIds: [],
+      message: "",
+    },
     race: {
       raceDayId: "",
       raceId: "",
@@ -26,6 +32,11 @@ export function createInitialState() {
       progress: 0,
       rivalProgress: 0,
       speedBoost: 0,
+      baseSpeed: 0,
+      rivalSpeed: 0,
+      perfectSpeedBoost: 0,
+      goodSpeedBoost: 0,
+      speedBoostDecay: 0,
       beatTimer: 0,
       beatInterval: 0,
       notes: [],

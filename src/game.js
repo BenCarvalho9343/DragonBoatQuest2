@@ -6,7 +6,7 @@ import { advanceDialogue, startSystemDialogue, tryStartDialogue } from "./system
 import { setFlag } from "./systems/flags.js";
 import { updateMapTransition } from "./systems/mapManager.js";
 import { updatePlayerMovement } from "./systems/movement.js";
-import { prepareRace, startRace, updateRace } from "./systems/race.js";
+import { resolveRaceResult, startRace, startRaceDay, updateRace } from "./systems/race.js";
 
 export class Game {
   constructor(canvas, input, assets) {
@@ -67,7 +67,7 @@ export class Game {
 
       if (this.input.wasPressed("Space", "Enter")) {
         setFlag(this.state, "caldecotte_race_briefing_seen");
-        prepareRace(this.state, "caldecotte", "caldecotte-200m");
+        startRaceDay(this.state, "caldecotte");
       }
 
       return;
@@ -92,11 +92,14 @@ export class Game {
 
     if (this.state.screen === GAME_STATES.RACE_RESULT) {
       if (this.input.wasPressed("Space", "Enter", "Escape")) {
+        const result = resolveRaceResult(this.state);
+
+        if (result.outcome === "next") {
+          return;
+        }
+
         this.state.screen = GAME_STATES.TEST_MAP;
-        startSystemDialogue(this.state, "Coach Tim", [
-          this.state.race.result === "win" ? "That will do for a first run." : "Not clean enough yet.",
-          "For now, we'll head back to the lake while the race system gets built properly.",
-        ]);
+        startSystemDialogue(this.state, "Coach Tim", result.lines);
       }
 
       return;
